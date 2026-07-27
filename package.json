@@ -1,0 +1,17 @@
+{
+  "name": "meeting-rooms",
+  "private": true,
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "test": "npm test -w server",
+    "dev": "concurrently -n server,web \"npm run start:dev -w server\" \"npm run dev -w web\"",
+    "build": "npm run build -w server && npm run build -w web",
+    "lint": "npm run lint -w server && npm run lint -w web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
