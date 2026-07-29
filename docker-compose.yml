@@ -16,5 +16,32 @@ services:
       timeout: 5s
       retries: 5
 
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://meeting_rooms:meeting_rooms@postgres:5432/meeting_rooms
+      PORT: 3000
+      TZ: UTC
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_PROXY_TARGET: http://server:3000
+    ports:
+      - '5173:5173'
+    depends_on:
+      - server
+
 volumes:
   postgres_data:

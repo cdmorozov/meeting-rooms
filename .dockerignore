@@ -1,0 +1,7 @@
+node_modules
+**/node_modules
+**/generated
+**/dist
+**/coverage
+.git
+notes
