@@ -7,7 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-// its for defending against timing attacks
+// this dummy hash is for defending against timing attacks
 const DUMMY_PASSWORD_HASH =
   '$argon2id$v=19$m=65536,p=4,t=3$wxwEaxUukN5wSjxg1v043g$FSDtX7kwvYgVbR23ulOTG2NjTyZvhXCxeZApdcBncpQ';
 

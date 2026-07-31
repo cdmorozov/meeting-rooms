@@ -1,8 +1,9 @@
-import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { SessionGuard } from './session.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +31,12 @@ export class AuthController {
     }
     res.clearCookie('session_id');
     return { ok: true };
+  }
+
+  @Get('me')
+  @UseGuards(SessionGuard)
+  me(@Req() req: Request) {
+    return { user: req.user };
   }
 
   private setSessionCookie(res: Response, sessionId: string, expiresAt: Date) {
