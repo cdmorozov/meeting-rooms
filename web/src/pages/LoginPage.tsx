@@ -1,5 +1,7 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { meQueryKey } from './ProtectedRoute'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -7,6 +9,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -23,6 +26,8 @@ export function LoginPage() {
         setError('Невірний email або пароль')
         return
       }
+      const data = await response.json()
+      queryClient.setQueryData(meQueryKey, data.user)
       navigate('/')
     } finally {
       setSubmitting(false)
