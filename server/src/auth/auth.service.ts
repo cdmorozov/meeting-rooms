@@ -25,7 +25,7 @@ export class AuthService {
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw new ConflictException('Email already registered');
+        throw new ConflictException({ errors: { email: 'Ця електронна адреса вже зареєстрована' } });
       }
       throw error;
     }
@@ -40,7 +40,7 @@ export class AuthService {
     const passwordMatches = await argon2.verify(user?.passwordHash ?? DUMMY_PASSWORD_HASH, dto.password);
 
     if (!user || !passwordMatches) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException({ errors: { general: 'Невірний email або пароль' } });
     }
 
     return this.createSession(user);
