@@ -1,44 +1,21 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
-import { meQueryKey } from './ProtectedRoute'
+import { useAuthRequest } from '../hooks/useAuthRequest'
 
 export function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
+  const { errors, submitting, submit } = useAuthRequest('/api/auth/register')
 
-  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    setError(null)
-    setSubmitting(true)
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      })
-      if (!response.ok) {
-        setError('Не вдалося зареєструватися')
-        return
-      }
-      const data = await response.json()
-      queryClient.setQueryData(meQueryKey, data.user)
-      navigate('/')
-    } finally {
-      setSubmitting(false)
-    }
+    submit({ name, email, password })
   }
 
   return (
     <form onSubmit={handleSubmit}>
       <h1>Реєстрація</h1>
-      {error && <p>{error}</p>}
+      {errors.general && <p>{errors.general}</p>}
       <label>
         Ім'я
         <input
@@ -47,6 +24,7 @@ export function RegisterPage() {
           onChange={(event) => setName(event.target.value)}
           required
         />
+        {errors.name && <p>{errors.name}</p>}
       </label>
       <label>
         Email
@@ -56,6 +34,7 @@ export function RegisterPage() {
           onChange={(event) => setEmail(event.target.value)}
           required
         />
+        {errors.email && <p>{errors.email}</p>}
       </label>
       <label>
         Пароль
@@ -65,6 +44,7 @@ export function RegisterPage() {
           onChange={(event) => setPassword(event.target.value)}
           required
         />
+        {errors.password && <p>{errors.password}</p>}
       </label>
       <button type="submit" disabled={submitting}>
         Зареєструватися

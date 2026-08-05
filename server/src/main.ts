@@ -21,6 +21,7 @@ async function bootstrap() {
             errors[error.property] = firstMessage;
           }
         }
+
         return new BadRequestException({ errors });
       },
     }),

@@ -1,7 +1,35 @@
-import { Route, Routes } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { Route, Routes, useNavigate } from 'react-router'
 import { LoginPage } from './pages/LoginPage'
-import { ProtectedRoute } from './pages/ProtectedRoute'
+import { meQueryKey, ProtectedRoute } from './pages/ProtectedRoute'
 import { RegisterPage } from './pages/RegisterPage'
+
+function HomePage() {
+  const [loggingOut, setLoggingOut] = useState(false)
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  async function handleLogout() {
+    setLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+      queryClient.removeQueries({ queryKey: meQueryKey })
+      navigate('/login')
+    } finally {
+      setLoggingOut(false)
+    }
+  }
+
+  return (
+    <div>
+      <p>Home page</p>
+      <button onClick={handleLogout} disabled={loggingOut}>
+        Вийти
+      </button>
+    </div>
+  )
+}
 
 function App() {
   return (
@@ -10,7 +38,7 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <div>Home page</div>
+            <HomePage />
           </ProtectedRoute>
         }
       />
