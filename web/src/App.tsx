@@ -4,6 +4,7 @@ import { Link, Route, Routes, useNavigate } from 'react-router'
 import { LoginPage } from './pages/LoginPage'
 import { meQueryKey, ProtectedRoute } from './pages/ProtectedRoute'
 import { RegisterPage } from './pages/RegisterPage'
+import { RoomSchedulePage } from './pages/RoomSchedulePage'
 import { RoomsListPage } from './pages/RoomsListPage'
 
 function HomePage() {
@@ -49,6 +50,14 @@ function App() {
         element={
           <ProtectedRoute>
             <RoomsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rooms/:id"
+        element={
+          <ProtectedRoute>
+            <RoomSchedulePage />
           </ProtectedRoute>
         }
       />

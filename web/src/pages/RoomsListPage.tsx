@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 
-interface Room {
+export interface Room {
   id: string
   name: string
   floor: number
   capacity: number
 }
 
-async function fetchRooms(): Promise<Room[]> {
+export async function fetchRooms(): Promise<Room[]> {
   const response = await fetch('/api/rooms', { credentials: 'include' })
   if (!response.ok) {
     throw new Error('Не вдалося завантажити кімнати')
