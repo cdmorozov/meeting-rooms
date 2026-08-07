@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { intervalsOverlap } from '../booking/overlap';
-import { BookingTimeError, validateBookingTime } from '../booking/validate-booking-time';
+import { BookingTimeError, OFFICE_ZONE, validateBookingTime } from '../booking/validate-booking-time';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -37,16 +38,15 @@ export class RoomsService {
       throw new NotFoundException('Кімнату не знайдено');
     }
 
-    const start = new Date(`${weekStart}T00:00:00.000Z`);
-    const end = new Date(start);
-    end.setUTCDate(end.getUTCDate() + 7);
+    const start = DateTime.fromISO(weekStart, { zone: OFFICE_ZONE }).startOf('day');
+    const end = start.plus({ weeks: 1 });
 
     const bookings = await this.prisma.booking.findMany({
       where: {
         roomId,
         cancelledAt: null,
-        startAt: { lt: end },
-        endAt: { gt: start },
+        startAt: { lt: end.toJSDate() },
+        endAt: { gt: start.toJSDate() },
       },
       select: {
         id: true,
@@ -76,11 +76,16 @@ export class RoomsService {
       throw new BadRequestException({ errors: { general: BOOKING_TIME_ERROR_MESSAGES[timeError] } });
     }
 
-    const activeBookings = await this.prisma.booking.findMany({
-      where: { roomId, cancelledAt: null },
+    const dayStart = DateTime.fromJSDate(startAt).setZone(OFFICE_ZONE).startOf('day');
+    const sameDayBookings = await this.prisma.booking.findMany({
+      where: {
+        roomId,
+        cancelledAt: null,
+        startAt: { gte: dayStart.toJSDate(), lt: dayStart.plus({ days: 1 }).toJSDate() },
+      },
       select: { startAt: true, endAt: true },
     });
-    const hasOverlap = activeBookings.some((booking) => intervalsOverlap(startAt, endAt, booking.startAt, booking.endAt));
+    const hasOverlap = sameDayBookings.some((booking) => intervalsOverlap(startAt, endAt, booking.startAt, booking.endAt));
     if (hasOverlap) {
       throw new ConflictException({ errors: { general: SLOT_TAKEN_MESSAGE } });
     }
