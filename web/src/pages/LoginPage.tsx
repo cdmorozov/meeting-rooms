@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion, type Variants } from 'motion/react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { PasswordInput } from '../components/PasswordInput'
@@ -7,7 +7,7 @@ import { useAuthRequest } from '../hooks/useAuthRequest'
 const INPUT_CLASS =
   'w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-200 focus:border-brand-accent focus:bg-white'
 
-const fieldVariants = {
+const fieldVariants: Variants = {
   hidden: { opacity: 0, y: 8 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05, duration: 0.3, ease: 'easeOut' } }),
 }

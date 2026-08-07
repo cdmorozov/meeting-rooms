@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion, type Variants } from 'motion/react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { fetchMe, meQueryKey } from './ProtectedRoute'
@@ -19,7 +19,7 @@ export async function fetchRooms(): Promise<Room[]> {
   return response.json()
 }
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 8 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: 'easeOut' } }),
 }
