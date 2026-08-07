@@ -4,9 +4,12 @@ interface WeekGridProps {
   days: number[]
   bookings: Booking[]
   slotLabels: string[]
+  todayDayIndex: number | null
+  currentTime: { dayIndex: number; position: number } | null
+  currentUserId: string | undefined
 }
 
-export function WeekGrid({ days, bookings, slotLabels }: WeekGridProps) {
+export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTime, currentUserId }: WeekGridProps) {
   const columns = `80px repeat(${days.length}, minmax(0, 1fr))`
   const rows = `40px repeat(${SLOT_COUNT}, 40px)`
 
@@ -16,7 +19,9 @@ export function WeekGrid({ days, bookings, slotLabels }: WeekGridProps) {
       {days.map((dayIndex) => (
         <div
           key={dayIndex}
-          className="flex items-center justify-center border-r border-b border-gray-200 py-2 text-sm font-medium text-gray-700"
+          className={`flex items-center justify-center border-r border-b border-gray-200 py-2 text-sm font-medium ${
+            dayIndex === todayDayIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+          }`}
         >
           {DAY_LABELS[dayIndex]}
         </div>
@@ -39,16 +44,32 @@ export function WeekGrid({ days, bookings, slotLabels }: WeekGridProps) {
         .map((booking) => (
           <div
             key={booking.id}
-            className="m-0.5 overflow-hidden rounded bg-blue-100 p-1 text-xs text-blue-900"
+            className={`m-0.5 overflow-hidden rounded border p-1 text-xs ${
+              booking.userId === currentUserId
+                ? 'border-blue-300 bg-blue-100 text-blue-900'
+                : 'border-gray-300 bg-gray-100 text-gray-700'
+            }`}
             style={{
               gridColumn: days.indexOf(booking.dayIndex) + 2,
               gridRow: `${booking.startSlot + 2} / ${booking.endSlot + 2}`,
             }}
           >
             <p className="font-medium">{booking.title}</p>
-            <p className="text-blue-700">{booking.authorName}</p>
+            <p className={booking.userId === currentUserId ? 'text-blue-700' : 'text-gray-500'}>{booking.authorName}</p>
           </div>
         ))}
+
+      {currentTime && days.includes(currentTime.dayIndex) && (
+        <div
+          className="relative"
+          style={{ gridColumn: days.indexOf(currentTime.dayIndex) + 2, gridRow: '2 / -1' }}
+        >
+          <div
+            className="absolute inset-x-0 border-t-2 border-red-500"
+            style={{ top: `${(currentTime.position / SLOT_COUNT) * 100}%` }}
+          />
+        </div>
+      )}
     </div>
   )
 }
