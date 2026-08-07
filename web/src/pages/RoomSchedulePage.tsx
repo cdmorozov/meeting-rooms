@@ -128,52 +128,63 @@ export function RoomSchedulePage() {
   const currentTime = todayDayIndex !== null && currentPosition !== null ? { dayIndex: todayDayIndex, position: currentPosition } : null
 
   return (
-    <div className="p-4">
-      <Link to="/" className="mb-2 inline-block text-sm text-gray-500 hover:text-brand-accent">
+    <div className="min-h-screen bg-gray-50 p-4">
+      <Link
+        to="/"
+        className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-brand-accent"
+      >
         ← Кімнати
       </Link>
 
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{room.name}</h1>
+        <h1 className="text-2xl font-bold text-brand-primary">{room.name}</h1>
         <button
           type="button"
           onClick={() => setCreateOpen(true)}
-          className="rounded bg-blue-600 px-3 py-1 text-sm text-white"
+          className="rounded-lg bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Забронювати
         </button>
       </div>
 
       {officeOffsetDiffers() && (
-        <p className="mb-2 text-sm text-gray-500">
+        <p className="mb-3 inline-block rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-brand-accent">
           Час показано у вашому поясі ({USER_ZONE}). Офіс працює за київським часом.
         </p>
       )}
 
-      <div className="mb-2 flex items-center justify-between">
-        <button type="button" onClick={() => setWeekOffset((offset) => offset - 1)} className="px-3 py-1 text-lg">
+      <div className="mb-3 flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-1.5">
+        <button
+          type="button"
+          onClick={() => setWeekOffset((offset) => offset - 1)}
+          className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
+        >
           ‹
         </button>
-        <span className="font-medium">{weekLabel}</span>
-        <button type="button" onClick={() => setWeekOffset((offset) => offset + 1)} className="px-3 py-1 text-lg">
+        <span className="font-semibold text-gray-900">{weekLabel}</span>
+        <button
+          type="button"
+          onClick={() => setWeekOffset((offset) => offset + 1)}
+          className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
+        >
           ›
         </button>
       </div>
 
       {isMobile && (
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-1.5">
           <button
             type="button"
             onClick={() => setSelectedDayIndex((day) => (day + 6) % 7)}
-            className="px-3 py-1 text-lg"
+            className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
           >
             ‹
           </button>
-          <span className="font-medium">{DAY_LABELS[selectedDayIndex]}</span>
+          <span className="font-semibold text-gray-900">{DAY_LABELS[selectedDayIndex]}</span>
           <button
             type="button"
             onClick={() => setSelectedDayIndex((day) => (day + 1) % 7)}
-            className="px-3 py-1 text-lg"
+            className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
           >
             ›
           </button>
