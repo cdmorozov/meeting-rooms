@@ -73,8 +73,11 @@ export function RoomSchedulePage() {
   const { id } = useParams<{ id: string }>()
   const isMobile = useIsMobile()
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex)
+  const [weekOffset, setWeekOffset] = useState(0)
 
-  const weekStart = DateTime.now().setZone(OFFICE_ZONE).startOf('week').toFormat('yyyy-MM-dd')
+  const weekStartDate = DateTime.now().setZone(OFFICE_ZONE).startOf('week').plus({ weeks: weekOffset })
+  const weekStart = weekStartDate.toFormat('yyyy-MM-dd')
+  const weekLabel = `${weekStartDate.setLocale('uk').toFormat('d MMMM')} – ${weekStartDate.plus({ days: 6 }).setLocale('uk').toFormat('d MMMM')}`
 
   const roomsQuery = useQuery({ queryKey: ['rooms'], queryFn: fetchRooms })
   const bookingsQuery = useQuery({
@@ -113,6 +116,16 @@ export function RoomSchedulePage() {
           Час показано у вашому поясі ({USER_ZONE}). Офіс працює за київським часом.
         </p>
       )}
+
+      <div className="mb-2 flex items-center justify-between">
+        <button type="button" onClick={() => setWeekOffset((offset) => offset - 1)} className="px-3 py-1 text-lg">
+          ‹
+        </button>
+        <span className="font-medium">{weekLabel}</span>
+        <button type="button" onClick={() => setWeekOffset((offset) => offset + 1)} className="px-3 py-1 text-lg">
+          ›
+        </button>
+      </div>
 
       {isMobile && (
         <div className="mb-2 flex items-center justify-between">
