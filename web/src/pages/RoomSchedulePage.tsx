@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { WeekGrid } from '../components/WeekGrid'
 import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/fakeSchedule'
+import { fetchMe, meQueryKey } from './ProtectedRoute'
 import { fetchRooms } from './RoomsListPage'
 
 const MOBILE_QUERY = '(max-width: 640px)'
@@ -19,6 +20,15 @@ function buildSlotLabels(): string[] {
 
 function officeOffsetDiffers(): boolean {
   return DateTime.now().setZone(OFFICE_ZONE).offset !== DateTime.now().setZone(USER_ZONE).offset
+}
+
+function currentSlotPosition(): number | null {
+  const now = DateTime.now().setZone(OFFICE_ZONE)
+  const minutesSinceOpen = (now.hour - 9) * 60 + now.minute
+  if (minutesSinceOpen < 0 || minutesSinceOpen > SLOT_COUNT * 30) {
+    return null
+  }
+  return minutesSinceOpen / 30
 }
 
 interface BookingDto {
@@ -44,6 +54,7 @@ function toGridBooking(dto: BookingDto, roomId: string): Booking {
   return {
     id: dto.id,
     roomId,
+    userId: dto.userId,
     title: dto.title,
     authorName: dto.userName,
     dayIndex: start.weekday - 1,
@@ -79,6 +90,7 @@ export function RoomSchedulePage() {
   const weekStart = weekStartDate.toFormat('yyyy-MM-dd')
   const weekLabel = `${weekStartDate.setLocale('uk').toFormat('d MMMM')} – ${weekStartDate.plus({ days: 6 }).setLocale('uk').toFormat('d MMMM')}`
 
+  const meQuery = useQuery({ queryKey: meQueryKey, queryFn: fetchMe })
   const roomsQuery = useQuery({ queryKey: ['rooms'], queryFn: fetchRooms })
   const bookingsQuery = useQuery({
     queryKey: ['rooms', id, 'bookings', weekStart],
@@ -106,6 +118,9 @@ export function RoomSchedulePage() {
   const bookings = bookingsQuery.data.map((dto) => toGridBooking(dto, id))
   const days = isMobile ? [selectedDayIndex] : [0, 1, 2, 3, 4, 5, 6]
   const slotLabels = buildSlotLabels()
+  const todayDayIndex = weekOffset === 0 ? todayIndex() : null
+  const currentPosition = weekOffset === 0 ? currentSlotPosition() : null
+  const currentTime = todayDayIndex !== null && currentPosition !== null ? { dayIndex: todayDayIndex, position: currentPosition } : null
 
   return (
     <div className="p-4">
@@ -147,7 +162,14 @@ export function RoomSchedulePage() {
         </div>
       )}
 
-      <WeekGrid days={days} bookings={bookings} slotLabels={slotLabels} />
+      <WeekGrid
+        days={days}
+        bookings={bookings}
+        slotLabels={slotLabels}
+        todayDayIndex={todayDayIndex}
+        currentTime={currentTime}
+        currentUserId={meQuery.data?.id}
+      />
     </div>
   )
 }
