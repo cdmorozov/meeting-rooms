@@ -1,7 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { DateTime } from 'luxon'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
+import { CancelBookingDialog } from '../components/CancelBookingDialog'
+import { CreateBookingModal } from '../components/CreateBookingModal'
 import { WeekGrid } from '../components/WeekGrid'
 import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/fakeSchedule'
 import { fetchMe, meQueryKey } from './ProtectedRoute'
@@ -83,8 +85,11 @@ function todayIndex(): number {
 export function RoomSchedulePage() {
   const { id } = useParams<{ id: string }>()
   const isMobile = useIsMobile()
+  const queryClient = useQueryClient()
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex)
   const [weekOffset, setWeekOffset] = useState(0)
+  const [isCreateOpen, setCreateOpen] = useState(false)
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null)
 
   const weekStartDate = DateTime.now().setZone(OFFICE_ZONE).startOf('week').plus({ weeks: weekOffset })
   const weekStart = weekStartDate.toFormat('yyyy-MM-dd')
@@ -124,7 +129,16 @@ export function RoomSchedulePage() {
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-xl font-semibold">{room.name}</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">{room.name}</h1>
+        <button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          className="rounded bg-blue-600 px-3 py-1 text-sm text-white"
+        >
+          Забронювати
+        </button>
+      </div>
 
       {officeOffsetDiffers() && (
         <p className="mb-2 text-sm text-gray-500">
@@ -169,7 +183,31 @@ export function RoomSchedulePage() {
         todayDayIndex={todayDayIndex}
         currentTime={currentTime}
         currentUserId={meQuery.data?.id}
+        onCancelBooking={setBookingToCancel}
       />
+
+      {isCreateOpen && (
+        <CreateBookingModal
+          roomId={id}
+          onClose={() => setCreateOpen(false)}
+          onCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ['rooms', id, 'bookings'] })
+            setCreateOpen(false)
+          }}
+        />
+      )}
+
+      {bookingToCancel && (
+        <CancelBookingDialog
+          bookingId={bookingToCancel.id}
+          bookingTitle={bookingToCancel.title}
+          onClose={() => setBookingToCancel(null)}
+          onCancelled={() => {
+            queryClient.invalidateQueries({ queryKey: ['rooms', id, 'bookings'] })
+            setBookingToCancel(null)
+          }}
+        />
+      )}
     </div>
   )
 }

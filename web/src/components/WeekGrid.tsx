@@ -7,9 +7,10 @@ interface WeekGridProps {
   todayDayIndex: number | null
   currentTime: { dayIndex: number; position: number } | null
   currentUserId: string | undefined
+  onCancelBooking: (booking: Booking) => void
 }
 
-export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTime, currentUserId }: WeekGridProps) {
+export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTime, currentUserId, onCancelBooking }: WeekGridProps) {
   const columns = `80px repeat(${days.length}, minmax(0, 1fr))`
   const rows = `40px repeat(${SLOT_COUNT}, 40px)`
 
@@ -41,23 +42,25 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
 
       {bookings
         .filter((booking) => days.includes(booking.dayIndex))
-        .map((booking) => (
-          <div
-            key={booking.id}
-            className={`m-0.5 overflow-hidden rounded border p-1 text-xs ${
-              booking.userId === currentUserId
-                ? 'border-blue-300 bg-blue-100 text-blue-900'
-                : 'border-gray-300 bg-gray-100 text-gray-700'
-            }`}
-            style={{
-              gridColumn: days.indexOf(booking.dayIndex) + 2,
-              gridRow: `${booking.startSlot + 2} / ${booking.endSlot + 2}`,
-            }}
-          >
-            <p className="font-medium">{booking.title}</p>
-            <p className={booking.userId === currentUserId ? 'text-blue-700' : 'text-gray-500'}>{booking.authorName}</p>
-          </div>
-        ))}
+        .map((booking) => {
+          const isOwn = booking.userId === currentUserId
+          return (
+            <div
+              key={booking.id}
+              onClick={isOwn ? () => onCancelBooking(booking) : undefined}
+              className={`m-0.5 overflow-hidden rounded border p-1 text-xs ${
+                isOwn ? 'cursor-pointer border-blue-300 bg-blue-100 text-blue-900 hover:bg-blue-200' : 'border-gray-300 bg-gray-100 text-gray-700'
+              }`}
+              style={{
+                gridColumn: days.indexOf(booking.dayIndex) + 2,
+                gridRow: `${booking.startSlot + 2} / ${booking.endSlot + 2}`,
+              }}
+            >
+              <p className="font-medium">{booking.title}</p>
+              <p className={isOwn ? 'text-blue-700' : 'text-gray-500'}>{booking.authorName}</p>
+            </div>
+          )
+        })}
 
       {currentTime && days.includes(currentTime.dayIndex) && (
         <div
