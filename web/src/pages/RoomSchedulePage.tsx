@@ -13,15 +13,15 @@ const MOBILE_QUERY = '(max-width: 640px)'
 const OFFICE_ZONE = 'Europe/Kyiv'
 const USER_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-function buildSlotLabels(): string[] {
-  const start = DateTime.now().setZone(OFFICE_ZONE).startOf('day').set({ hour: 9 })
+function buildSlotLabels(weekStart: DateTime): string[] {
+  const start = weekStart.set({ hour: 9, minute: 0 })
   return Array.from({ length: SLOT_COUNT }, (_, slot) =>
     start.plus({ minutes: slot * 30 }).setZone(USER_ZONE).toFormat('HH:mm'),
   )
 }
 
-function officeOffsetDiffers(): boolean {
-  return DateTime.now().setZone(OFFICE_ZONE).offset !== DateTime.now().setZone(USER_ZONE).offset
+function officeOffsetDiffers(weekStart: DateTime): boolean {
+  return weekStart.offset !== weekStart.setZone(USER_ZONE).offset
 }
 
 function currentSlotPosition(): number | null {
@@ -122,7 +122,7 @@ export function RoomSchedulePage() {
 
   const bookings = bookingsQuery.data.map((dto) => toGridBooking(dto, id))
   const days = isMobile ? [selectedDayIndex] : [0, 1, 2, 3, 4, 5, 6]
-  const slotLabels = buildSlotLabels()
+  const slotLabels = buildSlotLabels(weekStartDate)
   const todayDayIndex = weekOffset === 0 ? todayIndex() : null
   const currentPosition = weekOffset === 0 ? currentSlotPosition() : null
   const currentTime = todayDayIndex !== null && currentPosition !== null ? { dayIndex: todayDayIndex, position: currentPosition } : null
@@ -147,7 +147,7 @@ export function RoomSchedulePage() {
         </button>
       </div>
 
-      {officeOffsetDiffers() && (
+      {officeOffsetDiffers(weekStartDate) && (
         <p className="mb-3 inline-block rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-brand-accent">
           Час показано у вашому поясі ({USER_ZONE}). Офіс працює за київським часом.
         </p>
