@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { DateTime } from 'luxon'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { CancelBookingDialog } from '../components/CancelBookingDialog'
 import { CreateBookingModal } from '../components/CreateBookingModal'
 import { WeekGrid } from '../components/WeekGrid'
 import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/fakeSchedule'
+import { fetchRooms } from './HomePage'
 import { fetchMe, meQueryKey } from './ProtectedRoute'
-import { fetchRooms } from './RoomsListPage'
 
 const MOBILE_QUERY = '(max-width: 640px)'
 const OFFICE_ZONE = 'Europe/Kyiv'
@@ -129,6 +129,10 @@ export function RoomSchedulePage() {
 
   return (
     <div className="p-4">
+      <Link to="/" className="mb-2 inline-block text-sm text-gray-500 hover:text-brand-accent">
+        ← Кімнати
+      </Link>
+
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">{room.name}</h1>
         <button
