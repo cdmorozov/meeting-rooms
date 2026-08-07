@@ -3,11 +3,23 @@ import { DateTime } from 'luxon'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { WeekGrid } from '../components/WeekGrid'
-import { DAY_LABELS, type Booking } from '../lib/fakeSchedule'
+import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/fakeSchedule'
 import { fetchRooms } from './RoomsListPage'
 
 const MOBILE_QUERY = '(max-width: 640px)'
 const OFFICE_ZONE = 'Europe/Kyiv'
+const USER_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+function buildSlotLabels(): string[] {
+  const start = DateTime.now().setZone(OFFICE_ZONE).startOf('day').set({ hour: 9 })
+  return Array.from({ length: SLOT_COUNT }, (_, slot) =>
+    start.plus({ minutes: slot * 30 }).setZone(USER_ZONE).toFormat('HH:mm'),
+  )
+}
+
+function officeOffsetDiffers(): boolean {
+  return DateTime.now().setZone(OFFICE_ZONE).offset !== DateTime.now().setZone(USER_ZONE).offset
+}
 
 interface BookingDto {
   id: string
@@ -54,7 +66,7 @@ function useIsMobile(): boolean {
 }
 
 function todayIndex(): number {
-  return (new Date().getDay() + 6) % 7
+  return DateTime.now().setZone(OFFICE_ZONE).weekday - 1
 }
 
 export function RoomSchedulePage() {
@@ -90,10 +102,17 @@ export function RoomSchedulePage() {
 
   const bookings = bookingsQuery.data.map((dto) => toGridBooking(dto, id))
   const days = isMobile ? [selectedDayIndex] : [0, 1, 2, 3, 4, 5, 6]
+  const slotLabels = buildSlotLabels()
 
   return (
     <div className="p-4">
       <h1 className="mb-4 text-xl font-semibold">{room.name}</h1>
+
+      {officeOffsetDiffers() && (
+        <p className="mb-2 text-sm text-gray-500">
+          Час показано у вашому поясі ({USER_ZONE}). Офіс працює за київським часом.
+        </p>
+      )}
 
       {isMobile && (
         <div className="mb-2 flex items-center justify-between">
@@ -115,7 +134,7 @@ export function RoomSchedulePage() {
         </div>
       )}
 
-      <WeekGrid days={days} bookings={bookings} />
+      <WeekGrid days={days} bookings={bookings} slotLabels={slotLabels} />
     </div>
   )
 }

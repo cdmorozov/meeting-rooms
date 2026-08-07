@@ -1,11 +1,12 @@
-import { DAY_LABELS, SLOT_COUNT, slotLabel, type Booking } from '../lib/fakeSchedule'
+import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/fakeSchedule'
 
 interface WeekGridProps {
   days: number[]
   bookings: Booking[]
+  slotLabels: string[]
 }
 
-export function WeekGrid({ days, bookings }: WeekGridProps) {
+export function WeekGrid({ days, bookings, slotLabels }: WeekGridProps) {
   const columns = `80px repeat(${days.length}, minmax(0, 1fr))`
   const rows = `40px repeat(${SLOT_COUNT}, 40px)`
 
@@ -23,7 +24,7 @@ export function WeekGrid({ days, bookings }: WeekGridProps) {
 
       {Array.from({ length: SLOT_COUNT }, (_, slot) => (
         <div key={`label-${slot}`} className="flex items-start justify-end border-r border-b border-gray-200 pr-2 text-xs text-gray-400">
-          {slot % 2 === 0 ? slotLabel(slot) : null}
+          {slot % 2 === 0 ? slotLabels[slot] : null}
         </div>
       ))}
 

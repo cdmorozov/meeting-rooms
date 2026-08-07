@@ -19,12 +19,6 @@ export const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд
 
 export const SLOT_COUNT = 20
 
-export function slotLabel(slot: number): string {
-  const hour = 9 + Math.floor(slot / 2)
-  const minute = slot % 2 === 0 ? '00' : '30'
-  return `${hour}:${minute}`
-}
-
 export const fakeRoom: Room = {
   id: 'room-1',
   name: 'Марс',
