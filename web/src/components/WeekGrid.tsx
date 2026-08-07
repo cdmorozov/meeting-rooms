@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react'
-import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/fakeSchedule'
+import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/schedule'
 
 interface WeekGridProps {
   days: number[]

@@ -5,23 +5,17 @@ import { Link, useParams } from 'react-router'
 import { CancelBookingDialog } from '../components/CancelBookingDialog'
 import { CreateBookingModal } from '../components/CreateBookingModal'
 import { WeekGrid } from '../components/WeekGrid'
-import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/fakeSchedule'
+import { DAY_LABELS, OFFICE_ZONE, SLOT_COUNT, USER_ZONE, offsetDiffersFromOffice, type Booking } from '../lib/schedule'
 import { fetchRooms } from './HomePage'
 import { fetchMe, meQueryKey } from './ProtectedRoute'
 
 const MOBILE_QUERY = '(max-width: 640px)'
-const OFFICE_ZONE = 'Europe/Kyiv'
-const USER_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 function buildSlotLabels(weekStart: DateTime): string[] {
   const start = weekStart.set({ hour: 9, minute: 0 })
   return Array.from({ length: SLOT_COUNT }, (_, slot) =>
     start.plus({ minutes: slot * 30 }).setZone(USER_ZONE).toFormat('HH:mm'),
   )
-}
-
-function officeOffsetDiffers(weekStart: DateTime): boolean {
-  return weekStart.offset !== weekStart.setZone(USER_ZONE).offset
 }
 
 function currentSlotPosition(): number | null {
@@ -147,7 +141,7 @@ export function RoomSchedulePage() {
         </button>
       </div>
 
-      {officeOffsetDiffers(weekStartDate) && (
+      {offsetDiffersFromOffice(weekStartDate) && (
         <p className="mb-3 inline-block rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-brand-accent">
           Час показано у вашому поясі ({USER_ZONE}). Офіс працює за київським часом.
         </p>
