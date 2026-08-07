@@ -10,7 +10,7 @@ const BOOKING_TIME_ERROR_MESSAGES: Record<BookingTimeError, string> = {
   TOO_SHORT: 'Мінімальна тривалість — 30 хвилин',
   TOO_LONG: 'Максимальна тривалість — 4 години',
   IN_PAST: 'Час бронювання вже минув',
-  OUTSIDE_WORKING_HOURS: 'Бронювання можливе лише з 9:00 до 19:00',
+  OUTSIDE_WORKING_HOURS: 'Бронювання можливе лише з 09:00 до 19:00 за київським часом',
 };
 
 const SLOT_TAKEN_MESSAGE = 'Цей час вже зайнято';

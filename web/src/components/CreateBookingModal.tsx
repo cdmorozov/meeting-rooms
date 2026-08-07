@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { USER_ZONE, offsetDiffersFromOffice } from '../lib/schedule'
 
 interface CreateBookingModalProps {
   roomId: string
@@ -103,6 +104,12 @@ export function CreateBookingModal({ roomId, onClose, onCreated }: CreateBooking
             />
           </label>
         </div>
+
+        {offsetDiffersFromOffice(DateTime.fromISO(date)) && (
+          <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-brand-accent">
+            Час вводиться у вашому поясі ({USER_ZONE}). Офіс приймає бронювання з 09:00 до 19:00 за київським часом.
+          </p>
+        )}
 
         <div className="mt-2 flex justify-end gap-2">
           <button
