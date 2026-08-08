@@ -16,12 +16,18 @@ const BOOKING_TIME_ERROR_MESSAGES: Record<BookingTimeError, string> = {
 
 const SLOT_TAKEN_MESSAGE = 'Цей час вже зайнято';
 
+const POSTGRES_EXCLUSION_VIOLATION = '23P01';
+
+interface DriverErrorMeta {
+  driverAdapterError?: { cause?: { originalCode?: string } };
+}
+
 function isExclusionViolation(error: unknown): boolean {
   if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
     return false;
   }
-  const meta = error.meta as { driverAdapterError?: { cause?: { originalCode?: string } } } | undefined;
-  return meta?.driverAdapterError?.cause?.originalCode === '23P01';
+  const meta: DriverErrorMeta | undefined = error.meta;
+  return meta?.driverAdapterError?.cause?.originalCode === POSTGRES_EXCLUSION_VIOLATION;
 }
 
 @Injectable()
@@ -59,7 +65,14 @@ export class RoomsService {
       orderBy: { startAt: 'asc' },
     });
 
-    return bookings.map(({ user, ...booking }) => ({ ...booking, userName: user.name }));
+    return bookings.map((booking) => ({
+      id: booking.id,
+      title: booking.title,
+      startAt: booking.startAt,
+      endAt: booking.endAt,
+      userId: booking.userId,
+      userName: booking.user.name,
+    }));
   }
 
   async createBooking(roomId: string, userId: string, dto: CreateBookingDto) {

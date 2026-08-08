@@ -16,6 +16,10 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
   const columns = `80px repeat(${days.length}, minmax(0, 1fr))`
   const rows = `40px repeat(${SLOT_COUNT}, 40px)`
 
+  function gridColumnFor(dayIndex: number): number {
+    return days.indexOf(dayIndex) + 2
+  }
+
   return (
     <div
       className="grid overflow-hidden rounded-xl border-t border-l border-gray-200 bg-white"
@@ -44,7 +48,7 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
           <div
             key={`cell-${dayIndex}-${slot}`}
             className={`border-r border-b border-gray-100 ${dayIndex === todayDayIndex ? 'bg-blue-50/30' : ''}`}
-            style={{ gridColumn: days.indexOf(dayIndex) + 2, gridRow: slot + 2 }}
+            style={{ gridColumn: gridColumnFor(dayIndex), gridRow: slot + 2 }}
           />
         )),
       )}
@@ -66,7 +70,7 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
                   : 'border-gray-200 bg-gray-50 text-gray-500'
               }`}
               style={{
-                gridColumn: days.indexOf(booking.dayIndex) + 2,
+                gridColumn: gridColumnFor(booking.dayIndex),
                 gridRow: `${booking.startSlot + 2} / ${booking.endSlot + 2}`,
               }}
             >
@@ -77,7 +81,7 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
         })}
 
       {currentTime && days.includes(currentTime.dayIndex) && (
-        <div className="relative" style={{ gridColumn: days.indexOf(currentTime.dayIndex) + 2, gridRow: '2 / -1' }}>
+        <div className="relative" style={{ gridColumn: gridColumnFor(currentTime.dayIndex), gridRow: '2 / -1' }}>
           <div
             className="absolute inset-x-0 flex items-center"
             style={{ top: `${(currentTime.position / SLOT_COUNT) * 100}%` }}

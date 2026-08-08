@@ -5,8 +5,16 @@ interface ErrorsBody {
   errors: unknown;
 }
 
+interface MessageBody {
+  message: string | string[];
+}
+
 function hasErrors(body: unknown): body is ErrorsBody {
   return typeof body === 'object' && body !== null && 'errors' in body;
+}
+
+function hasMessage(body: unknown): body is MessageBody {
+  return typeof body === 'object' && body !== null && 'message' in body;
 }
 
 @Catch(HttpException)
@@ -21,12 +29,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    const message = typeof body === 'object' && body !== null && 'message' in body
-      ? (body as { message: string | string[] }).message
-      : String(body);
+    const message = hasMessage(body) ? body.message : String(body);
+    const text = Array.isArray(message) ? message[0] : message;
 
-    response.status(status).json({
-      errors: { general: Array.isArray(message) ? message[0] : message },
-    });
+    response.status(status).json({ errors: { general: text } });
   }
 }
