@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { SERVER_UNAVAILABLE } from '../lib/messages'
 
 interface CancelBookingDialogProps {
   bookingId: string
@@ -32,6 +33,8 @@ export function CancelBookingDialog({ bookingId, bookingTitle, onClose, onCancel
         return
       }
       onCancelled()
+    } catch {
+      setError(SERVER_UNAVAILABLE)
     } finally {
       setSubmitting(false)
     }

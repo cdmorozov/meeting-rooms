@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { SERVER_UNAVAILABLE } from '../lib/messages'
 import { USER_ZONE, offsetDiffersFromOffice } from '../lib/schedule'
 
 interface CreateBookingModalProps {
@@ -51,6 +52,8 @@ export function CreateBookingModal({ roomId, onClose, onCreated }: CreateBooking
       }
 
       onCreated()
+    } catch {
+      setErrors({ general: SERVER_UNAVAILABLE })
     } finally {
       setSubmitting(false)
     }
