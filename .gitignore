@@ -8,3 +8,5 @@ generated/
 skills-lock.json
 implementation-notes.md
 notes/
+.vscode/
+
