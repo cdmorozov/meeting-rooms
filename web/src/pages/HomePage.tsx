@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, useReducedMotion, type Variants } from 'motion/react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { EmailNotVerifiedBanner } from '../components/EmailNotVerifiedBanner'
 import { QueryError } from '../components/QueryError'
 import { fetchMe, meQueryKey } from './ProtectedRoute'
 
@@ -79,6 +80,8 @@ export function HomePage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-8">
+        {meQuery.data?.emailVerified === false && <EmailNotVerifiedBanner />}
+
         <h1 className="mb-4 text-2xl font-bold text-brand-primary">Кімнати</h1>
 
         {roomsQuery.status === 'pending' && <p className="text-gray-500">Завантаження...</p>}

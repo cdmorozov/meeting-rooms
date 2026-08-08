@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { CancelBookingDialog } from '../components/CancelBookingDialog'
 import { CreateBookingModal } from '../components/CreateBookingModal'
+import { EmailNotVerifiedBanner } from '../components/EmailNotVerifiedBanner'
 import { QueryError } from '../components/QueryError'
 import { WeekGrid } from '../components/WeekGrid'
 import {
@@ -185,6 +186,8 @@ export function RoomSchedulePage() {
           Забронювати
         </button>
       </div>
+
+      {meQuery.data?.emailVerified === false && <EmailNotVerifiedBanner />}
 
       {offsetDiffersFromOffice(weekStartDate) && (
         <p className="mb-3 inline-block rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-brand-accent">

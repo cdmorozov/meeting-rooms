@@ -11,14 +11,24 @@ async function main() {
 
   const alice = await prisma.user.upsert({
     where: { email: 'alice@example.com' },
-    update: {},
-    create: { name: 'Alice', email: 'alice@example.com', passwordHash },
+    update: { emailVerifiedAt: new Date() },
+    create: {
+      name: 'Alice',
+      email: 'alice@example.com',
+      passwordHash,
+      emailVerifiedAt: new Date(),
+    },
   });
 
   const bob = await prisma.user.upsert({
     where: { email: 'bob@example.com' },
-    update: {},
-    create: { name: 'Bob', email: 'bob@example.com', passwordHash },
+    update: { emailVerifiedAt: new Date() },
+    create: {
+      name: 'Bob',
+      email: 'bob@example.com',
+      passwordHash,
+      emailVerifiedAt: new Date(),
+    },
   });
 
   const roomData = [

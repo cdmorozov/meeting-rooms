@@ -5,6 +5,7 @@ import { MyBookingsPage } from './pages/MyBookingsPage'
 import { ProtectedRoute } from './pages/ProtectedRoute'
 import { RegisterPage } from './pages/RegisterPage'
 import { RoomSchedulePage } from './pages/RoomSchedulePage'
+import { VerifyEmailPage } from './pages/VerifyEmailPage'
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/verify" element={<VerifyEmailPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
     </Routes>

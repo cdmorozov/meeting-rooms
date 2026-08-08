@@ -11,6 +11,7 @@ export interface AuthenticatedUser {
   id: string;
   name: string;
   email: string;
+  emailVerified: boolean;
 }
 
 declare module 'express-serve-static-core' {
@@ -35,7 +36,14 @@ export class SessionGuard implements CanActivate {
       where: { id: sessionId },
       select: {
         expiresAt: true,
-        user: { select: { id: true, name: true, email: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            emailVerifiedAt: true,
+          },
+        },
       },
     });
 
@@ -43,7 +51,12 @@ export class SessionGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    request.user = session.user;
+    request.user = {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+      emailVerified: session.user.emailVerifiedAt !== null,
+    };
     return true;
   }
 }

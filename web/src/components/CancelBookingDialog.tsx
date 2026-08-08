@@ -49,7 +49,7 @@ export function CancelBookingDialog({ bookingId, bookingTitle, onClose, onCancel
         className="flex flex-col gap-4 p-6"
       >
         <h2 className="text-lg font-bold text-brand-primary">Скасувати бронювання?</h2>
-        <p className="text-sm text-gray-500">«{bookingTitle}» буде скасовано. Цю дію не можна відмінити.</p>
+        <p className="text-sm text-gray-500">«{bookingTitle}» буде скасовано. Повернути бронювання не вийде.</p>
         {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <div className="mt-2 flex justify-end gap-2">
           <button

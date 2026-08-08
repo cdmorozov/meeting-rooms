@@ -11,6 +11,7 @@ import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 import { SessionGuard } from './session.guard';
 
 @Controller('auth')
@@ -35,6 +36,11 @@ export class AuthController {
     const { user, sessionId, expiresAt } = await this.authService.login(dto);
     this.setSessionCookie(res, sessionId, expiresAt);
     return { user };
+  }
+
+  @Post('verify')
+  verify(@Body() dto: VerifyEmailDto) {
+    return this.authService.verifyEmail(dto.token);
   }
 
   @Post('logout')

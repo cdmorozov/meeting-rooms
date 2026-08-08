@@ -11,10 +11,12 @@ datasource db {
 }
 
 model User {
-  id           String @id @default(uuid()) @db.Uuid
-  name         String
-  email        String @unique @db.Citext
-  passwordHash String @map("password_hash")
+  id                String    @id @default(uuid()) @db.Uuid
+  name              String
+  email             String    @unique @db.Citext
+  passwordHash      String    @map("password_hash")
+  emailVerifiedAt   DateTime? @map("email_verified_at") @db.Timestamptz()
+  verificationToken String?   @unique @map("verification_token") @db.Uuid
 
   bookings Booking[]
   sessions Session[]

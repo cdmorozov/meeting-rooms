@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -17,14 +18,16 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 
 const BOOKING_TIME_ERROR_MESSAGES: Record<BookingTimeError, string> = {
   NOT_MULTIPLE_OF_30: 'Час має бути кратним 30 хвилинам',
-  TOO_SHORT: 'Мінімальна тривалість — 30 хвилин',
-  TOO_LONG: 'Максимальна тривалість — 4 години',
+  TOO_SHORT: 'Мінімальна тривалість 30 хвилин',
+  TOO_LONG: 'Максимальна тривалість 4 години',
   IN_PAST: 'Час бронювання вже минув',
   OUTSIDE_WORKING_HOURS:
     'Бронювання можливе лише з 09:00 до 19:00 за київським часом',
 };
 
 const SLOT_TAKEN_MESSAGE = 'Цей час вже зайнято';
+
+const EMAIL_NOT_VERIFIED_MESSAGE = 'Підтвердіть email, щоб бронювати';
 
 const POSTGRES_EXCLUSION_VIOLATION = '23P01';
 
@@ -91,6 +94,16 @@ export class RoomsService {
   }
 
   async createBooking(roomId: string, userId: string, dto: CreateBookingDto) {
+    const author = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { emailVerifiedAt: true },
+    });
+    if (!author?.emailVerifiedAt) {
+      throw new ForbiddenException({
+        errors: { general: EMAIL_NOT_VERIFIED_MESSAGE },
+      });
+    }
+
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
     if (!room) {
       throw new NotFoundException('Кімнату не знайдено');

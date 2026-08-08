@@ -31,7 +31,7 @@ describe('Bookings API', () => {
   let strangerCookie: string;
   const createdEmails: string[] = [];
 
-  async function registerUser(): Promise<string> {
+  async function registerUser(): Promise<{ cookie: string; email: string }> {
     const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
     createdEmails.push(email);
 
@@ -40,7 +40,25 @@ describe('Bookings API', () => {
       .send({ name: 'E2E', email, password: PASSWORD })
       .expect(201);
 
-    return response.headers['set-cookie'][0];
+    return { cookie: response.headers['set-cookie'][0], email };
+  }
+
+  async function verifyEmail(email: string): Promise<void> {
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { email },
+      select: { verificationToken: true },
+    });
+
+    await request(app.getHttpServer())
+      .post('/api/auth/verify')
+      .send({ token: user.verificationToken })
+      .expect(201);
+  }
+
+  async function registerVerifiedUser(): Promise<string> {
+    const user = await registerUser();
+    await verifyEmail(user.email);
+    return user.cookie;
   }
 
   async function findBookingId(title: string): Promise<string> {
@@ -64,8 +82,8 @@ describe('Bookings API', () => {
     }
     roomId = room.id;
 
-    ownerCookie = await registerUser();
-    strangerCookie = await registerUser();
+    ownerCookie = await registerVerifiedUser();
+    strangerCookie = await registerVerifiedUser();
   });
 
   afterAll(async () => {
@@ -163,7 +181,7 @@ describe('Bookings API', () => {
       .expect(400);
 
     expect(response.body).toMatchObject({
-      errors: { general: 'Максимальна тривалість — 4 години' },
+      errors: { general: 'Максимальна тривалість 4 години' },
     });
   });
 
@@ -230,6 +248,47 @@ describe('Bookings API', () => {
 
     expect(response.body).toMatchObject({
       errors: { general: 'Це не ваше бронювання' },
+    });
+  });
+
+  it('не дає бронювати без підтвердженого email', async () => {
+    const unconfirmed = await registerUser();
+    const slot = futureSlot(9, 4);
+
+    const response = await request(app.getHttpServer())
+      .post(`/api/rooms/${roomId}/bookings`)
+      .set('Cookie', unconfirmed.cookie)
+      .send({
+        title: 'Без підтвердження',
+        startAt: slot.startAt,
+        endAt: slot.hourLater,
+      })
+      .expect(403);
+
+    expect(response.body).toMatchObject({
+      errors: {
+        general: 'Підтвердіть email, щоб бронювати',
+      },
+    });
+  });
+
+  it('відхиляє використане посилання підтвердження', async () => {
+    const user = await registerUser();
+    const created = await prisma.user.findUniqueOrThrow({
+      where: { email: user.email },
+      select: { verificationToken: true },
+    });
+    const token = created.verificationToken;
+
+    await verifyEmail(user.email);
+
+    const response = await request(app.getHttpServer())
+      .post('/api/auth/verify')
+      .send({ token })
+      .expect(400);
+
+    expect(response.body).toMatchObject({
+      errors: { general: 'Посилання недійсне або вже використане' },
     });
   });
 
