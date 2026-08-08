@@ -31,8 +31,14 @@ export function HomePage() {
   const queryClient = useQueryClient()
   const reduced = useReducedMotion()
 
+  const [minCapacity, setMinCapacity] = useState(0)
+
   const meQuery = useQuery({ queryKey: meQueryKey, queryFn: fetchMe })
   const roomsQuery = useQuery({ queryKey: ['rooms'], queryFn: fetchRooms })
+
+  const rooms = roomsQuery.data ?? []
+  const capacityOptions = [...new Set(rooms.map((room) => room.capacity))].sort((a, b) => a - b)
+  const visibleRooms = rooms.filter((room) => room.capacity >= minCapacity)
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -79,13 +85,30 @@ export function HomePage() {
         {roomsQuery.status === 'error' && (
           <QueryError message="Не вдалося завантажити список кімнат" onRetry={() => roomsQuery.refetch()} />
         )}
-        {roomsQuery.status === 'success' && roomsQuery.data.length === 0 && (
-          <p className="text-gray-500">Кімнат поки немає</p>
-        )}
+        {roomsQuery.status === 'success' && rooms.length === 0 && <p className="text-gray-500">Кімнат поки немає</p>}
 
-        {roomsQuery.status === 'success' && roomsQuery.data.length > 0 && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {roomsQuery.data.map((room, i) => (
+        {roomsQuery.status === 'success' && rooms.length > 0 && (
+          <>
+            <label className="mb-4 flex items-center gap-2 text-sm text-gray-600">
+              Місткість
+              <select
+                value={minCapacity}
+                onChange={(event) => setMinCapacity(Number(event.target.value))}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-900"
+              >
+                <option value={0}>будь-яка</option>
+                {capacityOptions.map((capacity) => (
+                  <option key={capacity} value={capacity}>
+                    від {capacity} місць
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {visibleRooms.length === 0 && <p className="text-gray-500">Немає кімнат такої місткості</p>}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {visibleRooms.map((room, i) => (
               <motion.div
                 key={room.id}
                 custom={i}
@@ -101,10 +124,11 @@ export function HomePage() {
                   <span className="text-sm text-gray-500">
                     {room.floor} поверх, {room.capacity} місць
                   </span>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>
