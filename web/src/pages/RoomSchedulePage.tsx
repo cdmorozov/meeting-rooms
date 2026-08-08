@@ -90,6 +90,14 @@ function todayIndex(): number {
   return DateTime.now().setZone(OFFICE_ZONE).weekday - 1
 }
 
+function dayIndexFromParam(day: string | null): number {
+  const index = Number(day)
+  if (!day || !Number.isInteger(index) || index < 0 || index > 6) {
+    return todayIndex()
+  }
+  return index
+}
+
 function weekOffsetFromParam(week: string | null): number {
   if (!week) {
     return 0
@@ -107,7 +115,7 @@ export function RoomSchedulePage() {
   const [searchParams] = useSearchParams()
   const isMobile = useIsMobile()
   const queryClient = useQueryClient()
-  const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex)
+  const [selectedDayIndex, setSelectedDayIndex] = useState(() => dayIndexFromParam(searchParams.get('day')))
   const [weekOffset, setWeekOffset] = useState(() => weekOffsetFromParam(searchParams.get('week')))
   const [isCreateOpen, setCreateOpen] = useState(false)
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null)

@@ -33,8 +33,9 @@ async function fetchMyBookings(scope: 'upcoming' | 'past', cursor: string | null
 }
 
 function scheduleLink(booking: MyBooking): string {
-  const week = DateTime.fromISO(booking.startAt).setZone(OFFICE_ZONE).startOf('week').toFormat('yyyy-MM-dd')
-  return `/rooms/${booking.roomId}?week=${week}`
+  const start = DateTime.fromISO(booking.startAt).setZone(OFFICE_ZONE)
+  const week = start.startOf('week').toFormat('yyyy-MM-dd')
+  return `/rooms/${booking.roomId}?week=${week}&day=${start.weekday - 1}`
 }
 
 function formatDate(iso: string): string {
