@@ -1,14 +1,15 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsString, Length } from 'class-validator';
+import { normalizedEmail, trimmed } from '../../common/transforms';
 
 export class RegisterDto {
   @IsString({ message: "Ім'я обов'язкове" })
   @Length(1, 100, { message: "Ім'я має бути від 1 до 100 символів" })
-  @Transform(({ value }) => value?.trim())
+  @Transform(trimmed)
   name: string;
 
   @IsEmail({}, { message: 'Некоректний email' })
-  @Transform(({ value }) => value?.trim().toLowerCase())
+  @Transform(normalizedEmail)
   email: string;
 
   @IsString()

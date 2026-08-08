@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { MyBookingsQueryDto } from './dto/my-bookings-query.dto';
 
@@ -69,7 +73,9 @@ export class BookingService {
   }
 
   async cancel(bookingId: string, userId: string) {
-    const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
     if (!booking || booking.cancelledAt) {
       throw new NotFoundException('Бронювання не знайдено');
     }

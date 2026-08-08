@@ -1,7 +1,16 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { intervalsOverlap } from '../booking/overlap';
-import { BookingTimeError, OFFICE_ZONE, validateBookingTime } from '../booking/validate-booking-time';
+import {
+  BookingTimeError,
+  OFFICE_ZONE,
+  validateBookingTime,
+} from '../booking/validate-booking-time';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -11,7 +20,8 @@ const BOOKING_TIME_ERROR_MESSAGES: Record<BookingTimeError, string> = {
   TOO_SHORT: 'Мінімальна тривалість — 30 хвилин',
   TOO_LONG: 'Максимальна тривалість — 4 години',
   IN_PAST: 'Час бронювання вже минув',
-  OUTSIDE_WORKING_HOURS: 'Бронювання можливе лише з 09:00 до 19:00 за київським часом',
+  OUTSIDE_WORKING_HOURS:
+    'Бронювання можливе лише з 09:00 до 19:00 за київським часом',
 };
 
 const SLOT_TAKEN_MESSAGE = 'Цей час вже зайнято';
@@ -27,7 +37,10 @@ function isExclusionViolation(error: unknown): boolean {
     return false;
   }
   const meta: DriverErrorMeta | undefined = error.meta;
-  return meta?.driverAdapterError?.cause?.originalCode === POSTGRES_EXCLUSION_VIOLATION;
+  return (
+    meta?.driverAdapterError?.cause?.originalCode ===
+    POSTGRES_EXCLUSION_VIOLATION
+  );
 }
 
 @Injectable()
@@ -44,7 +57,9 @@ export class RoomsService {
       throw new NotFoundException('Кімнату не знайдено');
     }
 
-    const start = DateTime.fromISO(weekStart, { zone: OFFICE_ZONE }).startOf('day');
+    const start = DateTime.fromISO(weekStart, { zone: OFFICE_ZONE }).startOf(
+      'day',
+    );
     const end = start.plus({ weeks: 1 });
 
     const bookings = await this.prisma.booking.findMany({
@@ -86,19 +101,28 @@ export class RoomsService {
 
     const timeError = validateBookingTime(startAt, endAt, new Date());
     if (timeError) {
-      throw new BadRequestException({ errors: { general: BOOKING_TIME_ERROR_MESSAGES[timeError] } });
+      throw new BadRequestException({
+        errors: { general: BOOKING_TIME_ERROR_MESSAGES[timeError] },
+      });
     }
 
-    const dayStart = DateTime.fromJSDate(startAt).setZone(OFFICE_ZONE).startOf('day');
+    const dayStart = DateTime.fromJSDate(startAt)
+      .setZone(OFFICE_ZONE)
+      .startOf('day');
     const sameDayBookings = await this.prisma.booking.findMany({
       where: {
         roomId,
         cancelledAt: null,
-        startAt: { gte: dayStart.toJSDate(), lt: dayStart.plus({ days: 1 }).toJSDate() },
+        startAt: {
+          gte: dayStart.toJSDate(),
+          lt: dayStart.plus({ days: 1 }).toJSDate(),
+        },
       },
       select: { startAt: true, endAt: true },
     });
-    const hasOverlap = sameDayBookings.some((booking) => intervalsOverlap(startAt, endAt, booking.startAt, booking.endAt));
+    const hasOverlap = sameDayBookings.some((booking) =>
+      intervalsOverlap(startAt, endAt, booking.startAt, booking.endAt),
+    );
     if (hasOverlap) {
       throw new ConflictException({ errors: { general: SLOT_TAKEN_MESSAGE } });
     }
@@ -109,7 +133,9 @@ export class RoomsService {
       });
     } catch (error) {
       if (isExclusionViolation(error)) {
-        throw new ConflictException({ errors: { general: SLOT_TAKEN_MESSAGE } });
+        throw new ConflictException({
+          errors: { general: SLOT_TAKEN_MESSAGE },
+        });
       }
       throw error;
     }

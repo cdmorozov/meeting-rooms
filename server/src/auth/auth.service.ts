@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
@@ -24,8 +28,13 @@ export class AuthService {
         data: { name: dto.name, email: dto.email, passwordHash },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw new ConflictException({ errors: { email: 'Ця електронна адреса вже зареєстрована' } });
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException({
+          errors: { email: 'Ця електронна адреса вже зареєстрована' },
+        });
       }
       throw error;
     }
@@ -34,13 +43,22 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    await this.prisma.session.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+    await this.prisma.session.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
 
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    const passwordMatches = await argon2.verify(user?.passwordHash ?? DUMMY_PASSWORD_HASH, dto.password);
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    const passwordMatches = await argon2.verify(
+      user?.passwordHash ?? DUMMY_PASSWORD_HASH,
+      dto.password,
+    );
 
     if (!user || !passwordMatches) {
-      throw new UnauthorizedException({ errors: { general: 'Невірний email або пароль' } });
+      throw new UnauthorizedException({
+        errors: { general: 'Невірний email або пароль' },
+      });
     }
 
     return this.createSession(user);
@@ -50,7 +68,11 @@ export class AuthService {
     await this.prisma.session.deleteMany({ where: { id: sessionId } });
   }
 
-  private async createSession(user: { id: string; name: string; email: string }) {
+  private async createSession(user: {
+    id: string;
+    name: string;
+    email: string;
+  }) {
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
     const session = await this.prisma.session.create({
       data: { userId: user.id, expiresAt },

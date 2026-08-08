@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { SessionGuard } from '../auth/session.guard';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -16,12 +27,19 @@ export class RoomsController {
   }
 
   @Get(':id/bookings')
-  findWeekBookings(@Param('id', ParseUUIDPipe) id: string, @Query() query: WeekBookingsQueryDto) {
+  findWeekBookings(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: WeekBookingsQueryDto,
+  ) {
     return this.roomsService.findWeekBookings(id, query.weekStart);
   }
 
   @Post(':id/bookings')
-  createBooking(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateBookingDto, @Req() request: Request) {
+  createBooking(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateBookingDto,
+    @Req() request: Request,
+  ) {
     if (!request.user) {
       throw new UnauthorizedException();
     }

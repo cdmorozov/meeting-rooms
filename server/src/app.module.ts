@@ -6,7 +6,13 @@ import { PrismaModule } from './prisma.module';
 import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ envFilePath: '../.env' }), PrismaModule, AuthModule, RoomsModule, BookingModule],
+  imports: [
+    ConfigModule.forRoot({ envFilePath: '../.env' }),
+    PrismaModule,
+    AuthModule,
+    RoomsModule,
+    BookingModule,
+  ],
   controllers: [],
   providers: [],
 })
