@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { SERVER_UNAVAILABLE } from '../lib/messages'
 import { meQueryKey } from '../pages/ProtectedRoute'
 
 type AuthErrors = Record<string, string>
@@ -28,6 +29,8 @@ export function useAuthRequest(url: string) {
       }
       queryClient.setQueryData(meQueryKey, data.user)
       navigate('/')
+    } catch {
+      setErrors({ general: SERVER_UNAVAILABLE })
     } finally {
       setSubmitting(false)
     }
