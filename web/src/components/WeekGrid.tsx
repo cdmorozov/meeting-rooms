@@ -1,6 +1,9 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/schedule'
 
+const FIRST_DAY_COLUMN = 2
+const FIRST_SLOT_ROW = 2
+
 interface WeekGridProps {
   days: number[]
   bookings: Booking[]
@@ -17,7 +20,11 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
   const rows = `40px repeat(${SLOT_COUNT}, 40px)`
 
   function gridColumnFor(dayIndex: number): number {
-    return days.indexOf(dayIndex) + 2
+    return days.indexOf(dayIndex) + FIRST_DAY_COLUMN
+  }
+
+  function gridRowFor(slot: number): number {
+    return slot + FIRST_SLOT_ROW
   }
 
   return (
@@ -48,7 +55,7 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
           <div
             key={`cell-${dayIndex}-${slot}`}
             className={`border-r border-b border-gray-100 ${dayIndex === todayDayIndex ? 'bg-blue-50/30' : ''}`}
-            style={{ gridColumn: gridColumnFor(dayIndex), gridRow: slot + 2 }}
+            style={{ gridColumn: gridColumnFor(dayIndex), gridRow: gridRowFor(slot) }}
           />
         )),
       )}
@@ -71,7 +78,7 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
               }`}
               style={{
                 gridColumn: gridColumnFor(booking.dayIndex),
-                gridRow: `${booking.startSlot + 2} / ${booking.endSlot + 2}`,
+                gridRow: `${gridRowFor(booking.startSlot)} / ${gridRowFor(booking.endSlot)}`,
               }}
             >
               <p className="font-semibold">{booking.title}</p>

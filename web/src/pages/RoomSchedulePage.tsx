@@ -5,26 +5,39 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { CancelBookingDialog } from '../components/CancelBookingDialog'
 import { CreateBookingModal } from '../components/CreateBookingModal'
 import { WeekGrid } from '../components/WeekGrid'
-import { DAY_LABELS, OFFICE_ZONE, SLOT_COUNT, USER_ZONE, offsetDiffersFromOffice, type Booking } from '../lib/schedule'
+import {
+  DAY_LABELS,
+  OFFICE_OPEN_HOUR,
+  OFFICE_ZONE,
+  SLOT_COUNT,
+  SLOT_MINUTES,
+  USER_ZONE,
+  offsetDiffersFromOffice,
+  type Booking,
+} from '../lib/schedule'
 import { fetchRooms } from './HomePage'
 import { fetchMe, meQueryKey } from './ProtectedRoute'
 
 const MOBILE_QUERY = '(max-width: 640px)'
 
+function toSlotIndex(officeTime: DateTime): number {
+  const minutesSinceOpen = (officeTime.hour - OFFICE_OPEN_HOUR) * 60 + officeTime.minute
+  return minutesSinceOpen / SLOT_MINUTES
+}
+
 function buildSlotLabels(weekStart: DateTime): string[] {
-  const start = weekStart.set({ hour: 9, minute: 0 })
+  const start = weekStart.set({ hour: OFFICE_OPEN_HOUR, minute: 0 })
   return Array.from({ length: SLOT_COUNT }, (_, slot) =>
-    start.plus({ minutes: slot * 30 }).setZone(USER_ZONE).toFormat('HH:mm'),
+    start.plus({ minutes: slot * SLOT_MINUTES }).setZone(USER_ZONE).toFormat('HH:mm'),
   )
 }
 
 function currentSlotPosition(): number | null {
-  const now = DateTime.now().setZone(OFFICE_ZONE)
-  const minutesSinceOpen = (now.hour - 9) * 60 + now.minute
-  if (minutesSinceOpen < 0 || minutesSinceOpen > SLOT_COUNT * 30) {
+  const position = toSlotIndex(DateTime.now().setZone(OFFICE_ZONE))
+  if (position < 0 || position > SLOT_COUNT) {
     return null
   }
-  return minutesSinceOpen / 30
+  return position
 }
 
 interface BookingDto {
@@ -54,8 +67,8 @@ function toGridBooking(dto: BookingDto, roomId: string): Booking {
     title: dto.title,
     authorName: dto.userName,
     dayIndex: start.weekday - 1,
-    startSlot: (start.hour - 9) * 2 + (start.minute === 30 ? 1 : 0),
-    endSlot: (end.hour - 9) * 2 + (end.minute === 30 ? 1 : 0),
+    startSlot: toSlotIndex(start),
+    endSlot: toSlotIndex(end),
   }
 }
 
