@@ -25,6 +25,7 @@ services:
       DATABASE_URL: postgresql://meeting_rooms:meeting_rooms@postgres:5432/meeting_rooms
       PORT: 3000
       TZ: UTC
+      NOTIFY_BEFORE_MINUTES: 10
     ports:
       - '3000:3000'
     depends_on:

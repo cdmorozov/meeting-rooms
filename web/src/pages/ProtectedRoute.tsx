@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router'
+import { BookingEndNotifier } from '../components/BookingEndNotifier'
 import { QueryError } from '../components/QueryError'
 import { SERVER_UNAVAILABLE } from '../lib/messages'
 
@@ -50,5 +51,10 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     )
   }
 
-  return <>{children}</>
+  return (
+    <>
+      {children}
+      <BookingEndNotifier />
+    </>
+  )
 }

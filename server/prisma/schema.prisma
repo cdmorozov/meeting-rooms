@@ -53,6 +53,7 @@ model Booking {
   startAt     DateTime  @map("start_at") @db.Timestamptz()
   endAt       DateTime  @map("end_at") @db.Timestamptz()
   cancelledAt DateTime? @map("cancelled_at") @db.Timestamptz()
+  notifiedAt  DateTime? @map("notified_at") @db.Timestamptz()
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
 
   roomId String @map("room_id") @db.Uuid

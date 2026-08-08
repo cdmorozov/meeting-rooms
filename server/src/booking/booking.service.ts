@@ -8,6 +8,16 @@ import { MyBookingsQueryDto } from './dto/my-bookings-query.dto';
 
 const PAST_PAGE_SIZE = 20;
 
+const DEFAULT_NOTIFY_BEFORE_MINUTES = 10;
+
+function notifyBeforeMinutes(): number {
+  const configured = Number(process.env.NOTIFY_BEFORE_MINUTES);
+  if (!Number.isFinite(configured) || configured <= 0) {
+    return DEFAULT_NOTIFY_BEFORE_MINUTES;
+  }
+  return configured;
+}
+
 const BOOKING_LIST_SELECT = {
   id: true,
   title: true,
@@ -16,6 +26,14 @@ const BOOKING_LIST_SELECT = {
   roomId: true,
   room: { select: { name: true } },
 };
+
+interface EndingBooking {
+  id: string;
+  title: string;
+  endAt: Date;
+  roomId: string;
+  room: { name: string };
+}
 
 interface BookingWithRoom {
   id: string;
@@ -40,6 +58,55 @@ function toListItem(booking: BookingWithRoom) {
 @Injectable()
 export class BookingService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async takeEndingSoonNotifications(userId: string) {
+    const now = new Date();
+    const until = new Date(now.getTime() + notifyBeforeMinutes() * 60 * 1000);
+
+    const endingSoon = await this.prisma.booking.findMany({
+      where: {
+        userId,
+        cancelledAt: null,
+        notifiedAt: null,
+        endAt: { gt: now, lte: until },
+      },
+      select: {
+        id: true,
+        title: true,
+        endAt: true,
+        roomId: true,
+        room: { select: { name: true } },
+      },
+      orderBy: { endAt: 'asc' },
+    });
+
+    const withBusyNextSlot: EndingBooking[] = [];
+    for (const booking of endingSoon) {
+      const nextBooking = await this.prisma.booking.findFirst({
+        where: {
+          roomId: booking.roomId,
+          cancelledAt: null,
+          startAt: booking.endAt,
+        },
+        select: { id: true },
+      });
+      if (nextBooking) {
+        withBusyNextSlot.push(booking);
+      }
+    }
+
+    await this.prisma.booking.updateMany({
+      where: { id: { in: withBusyNextSlot.map((booking) => booking.id) } },
+      data: { notifiedAt: now },
+    });
+
+    return withBusyNextSlot.map((booking) => ({
+      id: booking.id,
+      title: booking.title,
+      endAt: booking.endAt,
+      roomName: booking.room.name,
+    }));
+  }
 
   async findMine(userId: string, query: MyBookingsQueryDto) {
     const now = new Date();

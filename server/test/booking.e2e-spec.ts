@@ -27,6 +27,8 @@ describe('Bookings API', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let roomId: string;
+  let notifyRoomId: string;
+  let quietRoomId: string;
   let ownerCookie: string;
   let strangerCookie: string;
   const createdEmails: string[] = [];
@@ -61,6 +63,14 @@ describe('Bookings API', () => {
     return user.cookie;
   }
 
+  async function ownerId(): Promise<string> {
+    const owner = await prisma.user.findUniqueOrThrow({
+      where: { email: createdEmails[0] },
+      select: { id: true },
+    });
+    return owner.id;
+  }
+
   async function findBookingId(title: string): Promise<string> {
     const booking = await prisma.booking.findFirstOrThrow({ where: { title } });
     return booking.id;
@@ -81,6 +91,13 @@ describe('Bookings API', () => {
       throw new Error('Сід не застосовано: у базі немає кімнат');
     }
     roomId = room.id;
+
+    const rooms = await prisma.room.findMany({
+      orderBy: { name: 'asc' },
+      take: 3,
+    });
+    notifyRoomId = rooms[1].id;
+    quietRoomId = rooms[2].id;
 
     ownerCookie = await registerVerifiedUser();
     strangerCookie = await registerVerifiedUser();
@@ -290,6 +307,66 @@ describe('Bookings API', () => {
     expect(response.body).toMatchObject({
       errors: { general: 'Посилання недійсне або вже використане' },
     });
+  });
+
+  it('сповіщає про кінець бронювання рівно один раз', async () => {
+    const boundary = DateTime.now().plus({ minutes: 5 }).startOf('second');
+
+    await prisma.booking.create({
+      data: {
+        title: 'Поточна',
+        roomId: notifyRoomId,
+        userId: await ownerId(),
+        startAt: boundary.minus({ hours: 1 }).toJSDate(),
+        endAt: boundary.toJSDate(),
+      },
+    });
+    await prisma.booking.create({
+      data: {
+        title: 'Наступна',
+        roomId: notifyRoomId,
+        userId: await ownerId(),
+        startAt: boundary.toJSDate(),
+        endAt: boundary.plus({ hours: 1 }).toJSDate(),
+      },
+    });
+
+    const first = await request(app.getHttpServer())
+      .get('/api/bookings/notifications')
+      .set('Cookie', ownerCookie)
+      .expect(200);
+
+    expect(first.body).toContainEqual(
+      expect.objectContaining({ title: 'Поточна' }),
+    );
+
+    const second = await request(app.getHttpServer())
+      .get('/api/bookings/notifications')
+      .set('Cookie', ownerCookie)
+      .expect(200);
+
+    expect(second.body).toEqual([]);
+  });
+
+  it('не сповіщає, якщо наступний слот вільний', async () => {
+    const boundary = DateTime.now().plus({ minutes: 5 }).startOf('second');
+
+    await prisma.booking.create({
+      data: {
+        title: 'Без сусіда',
+        roomId: quietRoomId,
+        userId: await ownerId(),
+        startAt: boundary.minus({ hours: 1 }).toJSDate(),
+        endAt: boundary.toJSDate(),
+      },
+    });
+
+    const response = await request(app.getHttpServer())
+      .get('/api/bookings/notifications')
+      .set('Cookie', ownerCookie)
+      .expect(200);
+
+    expect(response.body).toEqual([]);
   });
 
   it('вимагає авторизації', async () => {

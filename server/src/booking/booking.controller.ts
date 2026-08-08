@@ -27,6 +27,14 @@ export class BookingController {
     return this.bookingService.findMine(request.user.id, query);
   }
 
+  @Get('notifications')
+  notifications(@Req() request: Request) {
+    if (!request.user) {
+      throw new UnauthorizedException();
+    }
+    return this.bookingService.takeEndingSoonNotifications(request.user.id);
+  }
+
   @Post(':id/cancel')
   cancel(@Param('id', ParseUUIDPipe) id: string, @Req() request: Request) {
     if (!request.user) {
