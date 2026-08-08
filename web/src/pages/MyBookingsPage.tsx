@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { CancelBookingDialog } from '../components/CancelBookingDialog'
+import { QueryError } from '../components/QueryError'
 import { OFFICE_ZONE, USER_ZONE, offsetDiffersFromOffice } from '../lib/schedule'
 
 interface MyBooking {
@@ -89,18 +90,7 @@ function BookingsSection({ title, status, isEmpty, emptyText, onRetry, children 
 
       {status === 'pending' && <p className="text-gray-500">Завантаження...</p>}
 
-      {status === 'error' && (
-        <div className="flex items-center gap-3">
-          <p className="text-red-600">Не вдалося завантажити бронювання</p>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
-          >
-            Спробувати ще
-          </button>
-        </div>
-      )}
+      {status === 'error' && <QueryError message="Не вдалося завантажити бронювання" onRetry={onRetry} />}
 
       {status === 'success' && (isEmpty ? <p className="text-gray-500">{emptyText}</p> : children)}
     </section>

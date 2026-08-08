@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router'
+import { QueryError } from '../components/QueryError'
 import { SERVER_UNAVAILABLE } from '../lib/messages'
 
 export interface User {
@@ -42,15 +43,8 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
-        <p className="text-red-600">{SERVER_UNAVAILABLE}</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
-        >
-          Спробувати ще
-        </button>
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <QueryError message={SERVER_UNAVAILABLE} onRetry={() => refetch()} />
       </div>
     )
   }

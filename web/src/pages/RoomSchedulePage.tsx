@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { CancelBookingDialog } from '../components/CancelBookingDialog'
 import { CreateBookingModal } from '../components/CreateBookingModal'
+import { QueryError } from '../components/QueryError'
 import { WeekGrid } from '../components/WeekGrid'
 import {
   DAY_LABELS,
@@ -132,7 +133,17 @@ export function RoomSchedulePage() {
   }
 
   if (roomsQuery.status === 'error' || bookingsQuery.status === 'error') {
-    return <p className="p-4 text-red-600">Не вдалося завантажити розклад</p>
+    return (
+      <div className="p-4">
+        <QueryError
+          message="Не вдалося завантажити розклад"
+          onRetry={() => {
+            roomsQuery.refetch()
+            bookingsQuery.refetch()
+          }}
+        />
+      </div>
+    )
   }
 
   const room = roomsQuery.data.find((candidate) => candidate.id === id)

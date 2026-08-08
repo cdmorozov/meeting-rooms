@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, useReducedMotion, type Variants } from 'motion/react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { QueryError } from '../components/QueryError'
 import { fetchMe, meQueryKey } from './ProtectedRoute'
 
 export interface Room {
@@ -75,7 +76,9 @@ export function HomePage() {
         <h1 className="mb-4 text-2xl font-bold text-brand-primary">Кімнати</h1>
 
         {roomsQuery.status === 'pending' && <p className="text-gray-500">Завантаження...</p>}
-        {roomsQuery.status === 'error' && <p className="text-red-600">Не вдалося завантажити список кімнат</p>}
+        {roomsQuery.status === 'error' && (
+          <QueryError message="Не вдалося завантажити список кімнат" onRetry={() => roomsQuery.refetch()} />
+        )}
         {roomsQuery.status === 'success' && roomsQuery.data.length === 0 && (
           <p className="text-gray-500">Кімнат поки немає</p>
         )}
