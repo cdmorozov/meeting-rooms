@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
+import { MyBookingsPage } from './pages/MyBookingsPage'
 import { ProtectedRoute } from './pages/ProtectedRoute'
 import { RegisterPage } from './pages/RegisterPage'
 import { RoomSchedulePage } from './pages/RoomSchedulePage'
@@ -21,6 +22,14 @@ function App() {
         element={
           <ProtectedRoute>
             <RoomSchedulePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my"
+        element={
+          <ProtectedRoute>
+            <MyBookingsPage />
           </ProtectedRoute>
         }
       />

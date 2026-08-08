@@ -52,14 +52,22 @@ export function HomePage() {
             <p className="text-xs font-semibold tracking-wide text-brand-accent uppercase">Переговорні</p>
             {meQuery.data && <p className="mt-0.5 text-sm text-gray-500">Вітаємо, {meQuery.data.name}</p>}
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
-          >
-            Вийти
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/my"
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+            >
+              Мої бронювання
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+            >
+              Вийти
+            </button>
+          </div>
         </div>
       </header>
 

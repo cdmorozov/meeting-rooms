@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { DateTime } from 'luxon'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { CancelBookingDialog } from '../components/CancelBookingDialog'
 import { CreateBookingModal } from '../components/CreateBookingModal'
 import { WeekGrid } from '../components/WeekGrid'
@@ -76,12 +76,25 @@ function todayIndex(): number {
   return DateTime.now().setZone(OFFICE_ZONE).weekday - 1
 }
 
+function weekOffsetFromParam(week: string | null): number {
+  if (!week) {
+    return 0
+  }
+  const target = DateTime.fromISO(week, { zone: OFFICE_ZONE }).startOf('week')
+  if (!target.isValid) {
+    return 0
+  }
+  const thisWeek = DateTime.now().setZone(OFFICE_ZONE).startOf('week')
+  return Math.round(target.diff(thisWeek, 'weeks').weeks)
+}
+
 export function RoomSchedulePage() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const isMobile = useIsMobile()
   const queryClient = useQueryClient()
   const [selectedDayIndex, setSelectedDayIndex] = useState(todayIndex)
-  const [weekOffset, setWeekOffset] = useState(0)
+  const [weekOffset, setWeekOffset] = useState(() => weekOffsetFromParam(searchParams.get('week')))
   const [isCreateOpen, setCreateOpen] = useState(false)
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null)
 
