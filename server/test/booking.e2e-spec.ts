@@ -369,6 +369,118 @@ describe('Bookings API', () => {
     expect(response.body).toEqual([]);
   });
 
+  it('створює серію щотижневих бронювань', async () => {
+    const slot = futureSlot(17, 4);
+
+    await request(app.getHttpServer())
+      .post(`/api/rooms/${roomId}/bookings`)
+      .set('Cookie', ownerCookie)
+      .send({
+        title: 'Щотижнева',
+        startAt: slot.startAt,
+        endAt: slot.hourLater,
+        repeatCount: 3,
+      })
+      .expect(201);
+
+    const series = await prisma.booking.findMany({
+      where: { title: 'Щотижнева' },
+      orderBy: { startAt: 'asc' },
+    });
+
+    expect(series).toHaveLength(3);
+    expect(series[0].seriesId).not.toBeNull();
+    expect(series[1].seriesId).toBe(series[0].seriesId);
+    expect(series[1].startAt.getTime() - series[0].startAt.getTime()).toBe(
+      7 * 24 * 60 * 60 * 1000,
+    );
+  });
+
+  it('скасовує лише одне повторення серії', async () => {
+    const slot = futureSlot(18, 4);
+
+    await request(app.getHttpServer())
+      .post(`/api/rooms/${roomId}/bookings`)
+      .set('Cookie', ownerCookie)
+      .send({
+        title: 'Серія на одне скасування',
+        startAt: slot.startAt,
+        endAt: slot.hourLater,
+        repeatCount: 3,
+      })
+      .expect(201);
+
+    const first = await findBookingId('Серія на одне скасування');
+
+    await request(app.getHttpServer())
+      .post(`/api/bookings/${first}/cancel?scope=one`)
+      .set('Cookie', ownerCookie)
+      .expect(201);
+
+    const alive = await prisma.booking.count({
+      where: { title: 'Серія на одне скасування', cancelledAt: null },
+    });
+    expect(alive).toBe(2);
+  });
+
+  it('скасовує всю серію', async () => {
+    const slot = futureSlot(13, 5);
+
+    await request(app.getHttpServer())
+      .post(`/api/rooms/${roomId}/bookings`)
+      .set('Cookie', ownerCookie)
+      .send({
+        title: 'Серія на повне скасування',
+        startAt: slot.startAt,
+        endAt: slot.hourLater,
+        repeatCount: 3,
+      })
+      .expect(201);
+
+    const first = await findBookingId('Серія на повне скасування');
+
+    await request(app.getHttpServer())
+      .post(`/api/bookings/${first}/cancel?scope=series`)
+      .set('Cookie', ownerCookie)
+      .expect(201);
+
+    const alive = await prisma.booking.count({
+      where: { title: 'Серія на повне скасування', cancelledAt: null },
+    });
+    expect(alive).toBe(0);
+  });
+
+  it('не створює жодного бронювання, якщо зайняте одне з повторень', async () => {
+    const slot = futureSlot(11, 5);
+    const secondWeek = slot.start.plus({ weeks: 1 });
+
+    await request(app.getHttpServer())
+      .post(`/api/rooms/${roomId}/bookings`)
+      .set('Cookie', strangerCookie)
+      .send({
+        title: 'Займає другий тиждень',
+        startAt: secondWeek.toUTC().toISO(),
+        endAt: secondWeek.plus({ hours: 1 }).toUTC().toISO(),
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post(`/api/rooms/${roomId}/bookings`)
+      .set('Cookie', ownerCookie)
+      .send({
+        title: 'Серія з конфліктом',
+        startAt: slot.startAt,
+        endAt: slot.hourLater,
+        repeatCount: 3,
+      })
+      .expect(409);
+
+    const created = await prisma.booking.count({
+      where: { title: 'Серія з конфліктом' },
+    });
+    expect(created).toBe(0);
+  });
+
   it('вимагає авторизації', async () => {
     await request(app.getHttpServer())
       .get('/api/bookings/my?scope=upcoming')

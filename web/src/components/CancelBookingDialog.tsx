@@ -5,12 +5,20 @@ import { SERVER_UNAVAILABLE } from '../lib/messages'
 interface CancelBookingDialogProps {
   bookingId: string
   bookingTitle: string
+  isSeries?: boolean
   onClose: () => void
   onCancelled: () => void
 }
 
-export function CancelBookingDialog({ bookingId, bookingTitle, onClose, onCancelled }: CancelBookingDialogProps) {
+export function CancelBookingDialog({
+  bookingId,
+  bookingTitle,
+  isSeries = false,
+  onClose,
+  onCancelled,
+}: CancelBookingDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const [scope, setScope] = useState<'one' | 'series'>('one')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const reduced = useReducedMotion()
@@ -23,7 +31,7 @@ export function CancelBookingDialog({ bookingId, bookingTitle, onClose, onCancel
     setSubmitting(true)
     setError('')
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
+      const response = await fetch(`/api/bookings/${bookingId}/cancel?scope=${scope}`, {
         method: 'POST',
         credentials: 'include',
       })
@@ -50,7 +58,34 @@ export function CancelBookingDialog({ bookingId, bookingTitle, onClose, onCancel
       >
         <h2 className="text-lg font-bold text-brand-primary">Скасувати бронювання?</h2>
         <p className="text-sm text-gray-500">«{bookingTitle}» буде скасовано. Повернути бронювання не вийде.</p>
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+
+        {isSeries && (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-sm font-medium text-gray-700">Це бронювання повторюване</legend>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="cancel-scope"
+                checked={scope === 'one'}
+                onChange={() => setScope('one')}
+                className="size-4 accent-brand-accent"
+              />
+              Тільки це повторення
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="cancel-scope"
+                checked={scope === 'series'}
+                onChange={() => setScope('series')}
+                className="size-4 accent-brand-accent"
+              />
+              Усі майбутні повторення
+            </label>
+          </fieldset>
+        )}
+
+        {error &&<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <div className="mt-2 flex justify-end gap-2">
           <button
             type="button"

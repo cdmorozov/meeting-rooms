@@ -12,6 +12,8 @@ interface CreateBookingModalProps {
 
 type FormErrors = Record<string, string>
 
+const REPEAT_OPTIONS = [2, 3, 4, 6, 8, 12]
+
 const INPUT_CLASS =
   'w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none transition-colors duration-200 focus:border-brand-accent focus:bg-white'
 
@@ -21,6 +23,8 @@ export function CreateBookingModal({ roomId, onClose, onCreated }: CreateBooking
   const [date, setDate] = useState(() => DateTime.now().toISODate() ?? '')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
+  const [repeatWeekly, setRepeatWeekly] = useState(false)
+  const [repeatCount, setRepeatCount] = useState(4)
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitting, setSubmitting] = useState(false)
   const reduced = useReducedMotion()
@@ -42,7 +46,7 @@ export function CreateBookingModal({ roomId, onClose, onCreated }: CreateBooking
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, startAt, endAt }),
+        body: JSON.stringify({ title, startAt, endAt, repeatCount: repeatWeekly ? repeatCount : 1 }),
       })
       const data = await response.json()
 
@@ -106,6 +110,35 @@ export function CreateBookingModal({ roomId, onClose, onCreated }: CreateBooking
               className={INPUT_CLASS}
             />
           </label>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <input
+              type="checkbox"
+              checked={repeatWeekly}
+              onChange={(event) => setRepeatWeekly(event.target.checked)}
+              className="size-4 accent-brand-accent"
+            />
+            Повторювати щотижня
+          </label>
+
+          {repeatWeekly && (
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              Скільки тижнів поспіль
+              <select
+                value={repeatCount}
+                onChange={(event) => setRepeatCount(Number(event.target.value))}
+                className="rounded-lg border-2 border-gray-200 bg-gray-50 px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-brand-accent focus:bg-white"
+              >
+                {REPEAT_OPTIONS.map((weeks) => (
+                  <option key={weeks} value={weeks}>
+                    {weeks}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
 
         {offsetDiffersFromOffice(DateTime.fromISO(date)) && (

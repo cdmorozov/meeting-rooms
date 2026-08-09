@@ -54,6 +54,7 @@ model Booking {
   endAt       DateTime  @map("end_at") @db.Timestamptz()
   cancelledAt DateTime? @map("cancelled_at") @db.Timestamptz()
   notifiedAt  DateTime? @map("notified_at") @db.Timestamptz()
+  seriesId    String?   @map("series_id") @db.Uuid
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
 
   roomId String @map("room_id") @db.Uuid
@@ -62,5 +63,6 @@ model Booking {
   userId String @map("user_id") @db.Uuid
   user   User   @relation(fields: [userId], references: [id])
 
+  @@index([seriesId])
   @@map("bookings")
 }

@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { DateTime } from 'luxon';
 import { intervalsOverlap } from '../booking/overlap';
 import {
@@ -33,6 +34,47 @@ const POSTGRES_EXCLUSION_VIOLATION = '23P01';
 
 interface DriverErrorMeta {
   driverAdapterError?: { cause?: { originalCode?: string } };
+}
+
+interface Occurrence {
+  startAt: Date;
+  endAt: Date;
+}
+
+// повторення рахуються у київському поясі, щоб після переходу на літній час
+// зустріч лишалась о тій самій годині
+function weeklyOccurrences(
+  startAt: Date,
+  endAt: Date,
+  count: number,
+): Occurrence[] {
+  const firstStart = DateTime.fromJSDate(startAt).setZone(OFFICE_ZONE);
+  const firstEnd = DateTime.fromJSDate(endAt).setZone(OFFICE_ZONE);
+
+  const occurrences: Occurrence[] = [];
+  for (let week = 0; week < count; week += 1) {
+    occurrences.push({
+      startAt: firstStart.plus({ weeks: week }).toJSDate(),
+      endAt: firstEnd.plus({ weeks: week }).toJSDate(),
+    });
+  }
+  return occurrences;
+}
+
+// у серії важливо показати, на якому саме тижні проблема
+function withDate(
+  message: string,
+  occurrence: Occurrence,
+  isSeries: boolean,
+): string {
+  if (!isSeries) {
+    return message;
+  }
+  const day = DateTime.fromJSDate(occurrence.startAt)
+    .setZone(OFFICE_ZONE)
+    .setLocale('uk')
+    .toFormat('d MMMM');
+  return `${message} (${day})`;
 }
 
 function isExclusionViolation(error: unknown): boolean {
@@ -78,6 +120,7 @@ export class RoomsService {
         startAt: true,
         endAt: true,
         userId: true,
+        seriesId: true,
         user: { select: { name: true } },
       },
       orderBy: { startAt: 'asc' },
@@ -90,6 +133,7 @@ export class RoomsService {
       endAt: booking.endAt,
       userId: booking.userId,
       userName: booking.user.name,
+      seriesId: booking.seriesId,
     }));
   }
 
@@ -109,19 +153,77 @@ export class RoomsService {
       throw new NotFoundException('Кімнату не знайдено');
     }
 
-    const startAt = new Date(dto.startAt);
-    const endAt = new Date(dto.endAt);
+    const occurrences = weeklyOccurrences(
+      new Date(dto.startAt),
+      new Date(dto.endAt),
+      dto.repeatCount ?? 1,
+    );
+    const isSeries = occurrences.length > 1;
 
-    const timeError = validateBookingTime(startAt, endAt, new Date());
-    if (timeError) {
-      throw new BadRequestException({
-        errors: { general: BOOKING_TIME_ERROR_MESSAGES[timeError] },
-      });
+    const now = new Date();
+    for (const occurrence of occurrences) {
+      const timeError = validateBookingTime(
+        occurrence.startAt,
+        occurrence.endAt,
+        now,
+      );
+      if (timeError) {
+        throw new BadRequestException({
+          errors: {
+            general: withDate(
+              BOOKING_TIME_ERROR_MESSAGES[timeError],
+              occurrence,
+              isSeries,
+            ),
+          },
+        });
+      }
+
+      if (await this.isSlotTaken(roomId, occurrence)) {
+        throw new ConflictException({
+          errors: {
+            general: withDate(SLOT_TAKEN_MESSAGE, occurrence, isSeries),
+          },
+        });
+      }
     }
 
-    const dayStart = DateTime.fromJSDate(startAt)
+    const seriesId = isSeries ? randomUUID() : null;
+
+    try {
+      const created = await this.prisma.$transaction(
+        occurrences.map((occurrence) =>
+          this.prisma.booking.create({
+            data: {
+              roomId,
+              userId,
+              title: dto.title,
+              seriesId,
+              startAt: occurrence.startAt,
+              endAt: occurrence.endAt,
+            },
+          }),
+        ),
+      );
+      return created[0];
+    } catch (error) {
+      if (isExclusionViolation(error)) {
+        throw new ConflictException({
+          errors: { general: SLOT_TAKEN_MESSAGE },
+        });
+      }
+      throw error;
+    }
+  }
+
+  private async isSlotTaken(
+    roomId: string,
+    occurrence: Occurrence,
+  ): Promise<boolean> {
+    const dayStart = DateTime.fromJSDate(occurrence.startAt)
       .setZone(OFFICE_ZONE)
       .startOf('day');
+
     const sameDayBookings = await this.prisma.booking.findMany({
       where: {
         roomId,
@@ -133,24 +235,14 @@ export class RoomsService {
       },
       select: { startAt: true, endAt: true },
     });
-    const hasOverlap = sameDayBookings.some((booking) =>
-      intervalsOverlap(startAt, endAt, booking.startAt, booking.endAt),
-    );
-    if (hasOverlap) {
-      throw new ConflictException({ errors: { general: SLOT_TAKEN_MESSAGE } });
-    }
 
-    try {
-      return await this.prisma.booking.create({
-        data: { roomId, userId, title: dto.title, startAt, endAt },
-      });
-    } catch (error) {
-      if (isExclusionViolation(error)) {
-        throw new ConflictException({
-          errors: { general: SLOT_TAKEN_MESSAGE },
-        });
-      }
-      throw error;
-    }
+    return sameDayBookings.some((booking) =>
+      intervalsOverlap(
+        occurrence.startAt,
+        occurrence.endAt,
+        booking.startAt,
+        booking.endAt,
+      ),
+    );
   }
 }

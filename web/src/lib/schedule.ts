@@ -6,6 +6,7 @@ export interface Booking {
   userId: string
   title: string
   authorName: string
+  seriesId: string | null
   dayIndex: number
   startSlot: number
   endSlot: number

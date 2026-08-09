@@ -13,6 +13,7 @@ interface MyBooking {
   endAt: string
   roomId: string
   roomName: string
+  seriesId: string | null
 }
 
 interface MyBookingsResponse {
@@ -57,7 +58,14 @@ function BookingRow({ booking, onCancel }: BookingRowProps) {
   return (
     <li className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 transition-colors hover:border-brand-accent">
       <Link to={scheduleLink(booking)} className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-gray-900">{booking.title}</p>
+        <p className="flex items-center gap-2 truncate font-semibold text-gray-900">
+          {booking.title}
+          {booking.seriesId && (
+            <span className="shrink-0 rounded-md bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-brand-accent">
+              щотижня
+            </span>
+          )}
+        </p>
         <p className="mt-0.5 text-sm text-gray-500">
           {formatDate(booking.startAt)}, {formatTimeRange(booking.startAt, booking.endAt)} · {booking.roomName}
         </p>
@@ -180,6 +188,7 @@ export function MyBookingsPage() {
         <CancelBookingDialog
           bookingId={bookingToCancel.id}
           bookingTitle={bookingToCancel.title}
+          isSeries={bookingToCancel.seriesId !== null}
           onClose={() => setBookingToCancel(null)}
           onCancelled={() => {
             queryClient.invalidateQueries({ queryKey: ['my-bookings'] })

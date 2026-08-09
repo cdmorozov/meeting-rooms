@@ -49,6 +49,7 @@ interface BookingDto {
   endAt: string
   userId: string
   userName: string
+  seriesId: string | null
 }
 
 async function fetchWeekBookings(roomId: string, weekStart: string): Promise<BookingDto[]> {
@@ -68,6 +69,7 @@ function toGridBooking(dto: BookingDto, roomId: string): Booking {
     userId: dto.userId,
     title: dto.title,
     authorName: dto.userName,
+    seriesId: dto.seriesId,
     dayIndex: start.weekday - 1,
     startSlot: toSlotIndex(start),
     endSlot: toSlotIndex(end),
@@ -258,6 +260,7 @@ export function RoomSchedulePage() {
         <CancelBookingDialog
           bookingId={bookingToCancel.id}
           bookingTitle={bookingToCancel.title}
+          isSeries={bookingToCancel.seriesId !== null}
           onClose={() => setBookingToCancel(null)}
           onCancelled={() => {
             queryClient.invalidateQueries({ queryKey: ['rooms', id, 'bookings'] })

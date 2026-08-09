@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { CancelScope } from './dto/cancel-booking-query.dto';
 import { MyBookingsQueryDto } from './dto/my-bookings-query.dto';
 
 const PAST_PAGE_SIZE = 20;
@@ -24,6 +25,7 @@ const BOOKING_LIST_SELECT = {
   startAt: true,
   endAt: true,
   roomId: true,
+  seriesId: true,
   room: { select: { name: true } },
 };
 
@@ -41,6 +43,7 @@ interface BookingWithRoom {
   startAt: Date;
   endAt: Date;
   roomId: string;
+  seriesId: string | null;
   room: { name: string };
 }
 
@@ -51,6 +54,7 @@ function toListItem(booking: BookingWithRoom) {
     startAt: booking.startAt,
     endAt: booking.endAt,
     roomId: booking.roomId,
+    seriesId: booking.seriesId,
     roomName: booking.room.name,
   };
 }
@@ -139,7 +143,7 @@ export class BookingService {
     };
   }
 
-  async cancel(bookingId: string, userId: string) {
+  async cancel(bookingId: string, userId: string, scope: CancelScope) {
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
     });
@@ -150,9 +154,26 @@ export class BookingService {
       throw new ForbiddenException('Це не ваше бронювання');
     }
 
-    return this.prisma.booking.update({
+    const now = new Date();
+
+    if (scope === 'series' && booking.seriesId) {
+      // минулі повторення лишаємо як історію, скасовуємо тільки те, що попереду
+      const cancelled = await this.prisma.booking.updateMany({
+        where: {
+          seriesId: booking.seriesId,
+          userId,
+          cancelledAt: null,
+          endAt: { gte: now },
+        },
+        data: { cancelledAt: now },
+      });
+      return { cancelledCount: cancelled.count };
+    }
+
+    await this.prisma.booking.update({
       where: { id: bookingId },
-      data: { cancelledAt: new Date() },
+      data: { cancelledAt: now },
     });
+    return { cancelledCount: 1 };
   }
 }

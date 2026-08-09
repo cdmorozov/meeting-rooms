@@ -12,6 +12,7 @@ import {
 import type { Request } from 'express';
 import { SessionGuard } from '../auth/session.guard';
 import { BookingService } from './booking.service';
+import { CancelBookingQueryDto } from './dto/cancel-booking-query.dto';
 import { MyBookingsQueryDto } from './dto/my-bookings-query.dto';
 
 @Controller('bookings')
@@ -36,10 +37,18 @@ export class BookingController {
   }
 
   @Post(':id/cancel')
-  cancel(@Param('id', ParseUUIDPipe) id: string, @Req() request: Request) {
+  cancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: CancelBookingQueryDto,
+    @Req() request: Request,
+  ) {
     if (!request.user) {
       throw new UnauthorizedException();
     }
-    return this.bookingService.cancel(id, request.user.id);
+    return this.bookingService.cancel(
+      id,
+      request.user.id,
+      query.scope ?? 'one',
+    );
   }
 }
