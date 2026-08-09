@@ -1,11 +1,12 @@
 import { motion, useReducedMotion } from 'motion/react'
-import { DAY_LABELS, SLOT_COUNT, type Booking } from '../lib/schedule'
+import { SLOT_COUNT, type Booking } from '../lib/schedule'
 
 const FIRST_DAY_COLUMN = 2
 const FIRST_SLOT_ROW = 2
 
 interface WeekGridProps {
   days: number[]
+  dayLabels: string[]
   bookings: Booking[]
   slotLabels: string[]
   todayDayIndex: number | null
@@ -14,10 +15,10 @@ interface WeekGridProps {
   onCancelBooking: (booking: Booking) => void
 }
 
-export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTime, currentUserId, onCancelBooking }: WeekGridProps) {
+export function WeekGrid({ days, dayLabels, bookings, slotLabels, todayDayIndex, currentTime, currentUserId, onCancelBooking }: WeekGridProps) {
   const reduced = useReducedMotion()
   const columns = `80px repeat(${days.length}, minmax(0, 1fr))`
-  const rows = `40px repeat(${SLOT_COUNT}, 40px)`
+  const rows = `auto repeat(${SLOT_COUNT}, 40px)`
 
   function gridColumnFor(dayIndex: number): number {
     return days.indexOf(dayIndex) + FIRST_DAY_COLUMN
@@ -36,11 +37,11 @@ export function WeekGrid({ days, bookings, slotLabels, todayDayIndex, currentTim
       {days.map((dayIndex) => (
         <div
           key={dayIndex}
-          className={`flex items-center justify-center border-r border-b border-gray-100 py-2 text-sm font-semibold ${
+          className={`flex items-center justify-center border-r border-b border-gray-100 py-2 text-center text-sm font-semibold leading-tight ${
             dayIndex === todayDayIndex ? 'bg-blue-50 text-brand-accent' : 'text-gray-700'
           }`}
         >
-          {DAY_LABELS[dayIndex]}
+          {dayLabels[dayIndex]}
         </div>
       ))}
 

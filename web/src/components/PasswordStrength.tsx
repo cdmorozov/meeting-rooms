@@ -9,8 +9,8 @@ const TEXT_COLORS = ['', 'text-red-600', 'text-amber-600', 'text-lime-600', 'tex
 function scoreFor(length: number): number {
   if (length === 0) return 0
   if (length < 8) return 1
-  if (length < 16) return 2
-  if (length < 24) return 3
+  if (length < 12) return 2
+  if (length < 16) return 3
   return 4
 }
 

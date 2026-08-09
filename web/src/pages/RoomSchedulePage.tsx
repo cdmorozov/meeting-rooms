@@ -165,6 +165,10 @@ export function RoomSchedulePage() {
   const bookings = bookingsQuery.data.map((dto) => toGridBooking(dto, id))
   const days = isMobile ? [selectedDayIndex] : [0, 1, 2, 3, 4, 5, 6]
   const slotLabels = buildSlotLabels(weekStartDate)
+  // на мобілці дата вже є в перемикачі, у сітці лишається сам день тижня
+  const dayLabels = DAY_LABELS.map((label, index) =>
+    isMobile ? label : `${label} ${weekStartDate.plus({ days: index }).setLocale('uk').toFormat('d MMMM')}`,
+  )
   const todayDayIndex = weekOffset === 0 ? todayIndex() : null
   const currentPosition = weekOffset === 0 ? currentSlotPosition() : null
   const currentTime = todayDayIndex !== null && currentPosition !== null ? { dayIndex: todayDayIndex, position: currentPosition } : null
@@ -197,26 +201,38 @@ export function RoomSchedulePage() {
         </p>
       )}
 
-      <div className="mb-3 flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-1.5">
-        <button
-          type="button"
-          onClick={() => setWeekOffset((offset) => offset - 1)}
-          className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
-        >
-          ‹
-        </button>
-        <span className="font-semibold text-gray-900">{weekLabel}</span>
-        <button
-          type="button"
-          onClick={() => setWeekOffset((offset) => offset + 1)}
-          className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
-        >
-          ›
-        </button>
+      {/* 3 колонки: заголовок зі стрілками стоїть по центру незалежно від кнопки "Сьогодні" */}
+      <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center rounded-lg border border-gray-200 bg-white px-2 py-1.5">
+        <div className="col-start-2 flex items-center justify-center gap-1">
+          <button
+            type="button"
+            onClick={() => setWeekOffset((offset) => offset - 1)}
+            className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
+          >
+            ‹
+          </button>
+          <span className="min-w-40 text-center font-semibold text-gray-900 sm:min-w-56">{weekLabel}</span>
+          <button
+            type="button"
+            onClick={() => setWeekOffset((offset) => offset + 1)}
+            className="rounded-md px-3 py-1 text-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-accent"
+          >
+            ›
+          </button>
+        </div>
+        {weekOffset !== 0 && (
+          <button
+            type="button"
+            onClick={() => setWeekOffset(0)}
+            className="col-start-3 justify-self-end rounded-md px-2 py-1 text-sm font-medium text-brand-accent transition-colors hover:bg-gray-100"
+          >
+            Сьогодні
+          </button>
+        )}
       </div>
 
       {isMobile && (
-        <div className="mb-3 flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-1.5">
+        <div className="mb-3 flex items-center justify-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5">
           <button
             type="button"
             onClick={() => setSelectedDayIndex((day) => (day + 6) % 7)}
@@ -224,7 +240,9 @@ export function RoomSchedulePage() {
           >
             ‹
           </button>
-          <span className="font-semibold text-gray-900">{DAY_LABELS[selectedDayIndex]}</span>
+          <span className="min-w-40 text-center font-semibold text-gray-900">
+            {weekStartDate.plus({ days: selectedDayIndex }).setLocale('uk').toFormat('d MMMM')}
+          </span>
           <button
             type="button"
             onClick={() => setSelectedDayIndex((day) => (day + 1) % 7)}
@@ -237,6 +255,7 @@ export function RoomSchedulePage() {
 
       <WeekGrid
         days={days}
+        dayLabels={dayLabels}
         bookings={bookings}
         slotLabels={slotLabels}
         todayDayIndex={todayDayIndex}
