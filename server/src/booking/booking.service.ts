@@ -157,7 +157,7 @@ export class BookingService {
     const now = new Date();
 
     if (scope === 'series' && booking.seriesId) {
-      // минулі повторення лишаємо як історію, скасовуємо тільки те, що попереду
+      // скасовую бронювання що попереду, минулі повторення записуються в історію
       const cancelled = await this.prisma.booking.updateMany({
         where: {
           seriesId: booking.seriesId,

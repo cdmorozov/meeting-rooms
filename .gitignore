@@ -6,7 +6,6 @@ generated/
 .agents/
 .windsurf/
 skills-lock.json
-implementation-notes.md
 notes/
 .vscode/
 
