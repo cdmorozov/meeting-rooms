@@ -1,3 +1,74 @@
+<div align="center">
+
+# Meeting Rooms — бронювання переговорних
+
+Конкурсний проєкт для **[UA-SKILLS](https://ua-skills.com/)** — змагання для junior-розробників.<br>
+Завдання: сервіс бронювання переговорних кімнат з тижневою сіткою, серіями бронювань і захистом від подвійного бронювання.
+
+![Public-бал](https://img.shields.io/badge/public--бал-100%20%2F%20100-f5b301?style=for-the-badge)
+![Тир](https://img.shields.io/badge/тир-на%20межі%20призів-0b1020?style=for-the-badge)
+
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+
+</div>
+
+## Результат конкурсу
+
+| Категорія ТЗ | Вага | Бал |
+| --- | :---: | :---: |
+| Функціональність | 40 | **38.67** |
+| Код і архітектура | 25 | **23** |
+| UI/UX | 20 | **14.67** |
+| README та історія розробки | 15 | **12** |
+| **Сума за чек-листом** | 100 | **88.34** |
+| **Фінальний public-бал** (з балами за бонуси) | | **100 / 100** |
+
+<p align="center">
+  <a href="docs/uaskills-review.pdf">
+    <img src="docs/uaskills-review-cover.png" alt="Рев'ю конкурсної роботи UA-SKILLS — відкрити PDF" width="640">
+  </a>
+  <br>
+  <sub>Натисніть на зображення, щоб відкрити повне рев'ю журі (PDF, 5 сторінок)</sub>
+</p>
+
+### Фідбек журі коротко
+
+> Робота зроблена на впевненому рівні, особливо в частині захисту від гонки при бронюванні і роботи з часовими поясами — обидві теми зазвичай і підводять подібні проекти, а тут витримані до дрібних граничних випадків.
+
+**Що відзначили**
+- Гонка при одночасному бронюванні: 15 паралельних запитів на один слот — рівно одне бронювання в базі (перевірка в сервісі + `EXCLUDE USING gist` у Postgres).
+- Часові пояси: правила рахуються в `Europe/Kyiv` через luxon, серії переживають перехід на літній час, інтерфейс показує час у поясі глядача.
+- Автентифікація: argon2, сесії в БД з TTL, httpOnly/secure кука, захист від визначення email за часом відповіді.
+- Жодної 500 на некоректних чи ворожих запитах до API, чиста шаруватість NestJS, єдиний формат помилок.
+- Мобільна розкладка на 390px з одноденним виглядом сітки.
+
+**Що покращити**
+- Перевіряти `weekStart` на календарну валідність, а не лише regex.
+- Зробити блоки бронювань у сітці доступними з клавіатури.
+- Додати `Max-Age` до сесійної куки і прокинути `WEB_ORIGIN` у `docker-compose.yml`.
+- Звести правила бронювання в один модуль замість `RoomsService` + `BookingService`.
+
+## Скриншоти з перевірки журі
+
+| Тижнева сітка | Часовий пояс глядача (Берлін) |
+| --- | --- |
+| [<img src="docs/shots/04-grid-busy-slot.png" alt="Тижнева сітка з бронюванням">](docs/shots/04-grid-busy-slot.png) | [<img src="docs/shots/17-tz-berlin-grid.png" alt="Сітка в поясі Берліна">](docs/shots/17-tz-berlin-grid.png) |
+| **Підтвердження скасування** | **Сповіщення про кінець бронювання** |
+| [<img src="docs/shots/13-cancel-confirm.png" alt="Діалог скасування">](docs/shots/13-cancel-confirm.png) | [<img src="docs/shots/33-notification-toast.png" alt="Тост-сповіщення">](docs/shots/33-notification-toast.png) |
+
+| Мобільна сітка | Мобільна форма | Мої бронювання |
+| :---: | :---: | :---: |
+| [<img src="docs/shots/19-mobile-grid.png" alt="Мобільна сітка" width="220">](docs/shots/19-mobile-grid.png) | [<img src="docs/shots/20-mobile-form.png" alt="Мобільна форма" width="220">](docs/shots/20-mobile-form.png) | [<img src="docs/shots/21-mobile-my.png" alt="Мої бронювання на мобільному" width="220">](docs/shots/21-mobile-my.png) |
+
+Усі скриншоти — у [`docs/shots`](docs/shots).
+
+---
+
 ### запуск через docker  
 docker compose up --build  
 фронт http://localhost:5173  
