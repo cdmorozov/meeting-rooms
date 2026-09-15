@@ -1,78 +1,25 @@
 <div align="center">
 
-<h1>Meeting Room Booking App</h1>
+# Meeting Room Booking App
 
-<p>
-Сервіс бронювання переговорних: тижнева сітка, щотижневі серії і захист від подвійних броней.<br>
-Робив його на конкурс <a href="https://ua-skills.com/"><b>UA-SKILLS</b></a> для junior-розробників.
-</p>
+Сервіс бронювання переговорних. Робив його на конкурс [UA-SKILLS](https://ua-skills.com/) для junior-розробників.
 
-<p>
-<img src="https://img.shields.io/badge/public--бал-100%20%2F%20100-f5b301?style=for-the-badge" alt="Public-бал 100 / 100">
-<img src="https://img.shields.io/badge/тир-на%20межі%20призів-0b1020?style=for-the-badge" alt="Тир: на межі призів">
-</p>
+![Public-бал 100 з 100](https://img.shields.io/badge/PUBLIC--БАЛ-100%20%2F%20100-f5b301?style=for-the-badge&labelColor=0b1020)
+![Тир: на межі призів](https://img.shields.io/badge/ТИР-на%20межі%20призів-0b1020?style=for-the-badge)
 
-<p>
-<img src="https://skillicons.dev/icons?i=ts,nestjs,prisma,postgres,react,vite,docker" alt="TypeScript, NestJS, Prisma, PostgreSQL, React, Vite, Docker">
-</p>
-
-<p>
-<a href="#скриншоти">Скриншоти</a> ·
-<a href="#результат-конкурсу">Результат</a> ·
-<a href="#запуск-через-docker">Запуск</a> ·
-<a href="docs/uaskills-review.pdf">Рев'ю журі (PDF)</a>
-</p>
+<img src="https://skillicons.dev/icons?i=nestjs,prisma,postgres,react,vite,docker,ts" alt="NestJS, Prisma, PostgreSQL, React, Vite, Docker, TypeScript">
 
 </div>
 
-## Скриншоти
+<p align="center">
+  <a href="docs/uaskills-review.pdf">
+    <img src="docs/uaskills-review-cover.png" alt="Рев'ю журі UA-SKILLS, перша сторінка" width="640">
+  </a>
+  <br>
+  <sub>Повне рев'ю журі в PDF на 5 сторінок, відкривається по кліку на картинку</sub>
+</p>
 
-<a href="docs/shots/17-tz-berlin-grid.png"><img src="docs/shots/17-tz-berlin-grid.png" alt="Тижнева сітка кімнати в поясі Берліна" width="100%"></a>
-<p align="center"><sub>Тижнева сітка кімнати. Час показано в поясі користувача, офіс працює за Києвом</sub></p>
-
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <a href="docs/shots/18-tz-boundary-rejected.png"><img src="docs/shots/18-tz-boundary-rejected.png" alt="Форма нового бронювання з помилкою"></a>
-      <br><sub>Нове бронювання поза робочими годинами</sub>
-    </td>
-    <td width="50%" align="center">
-      <a href="docs/shots/13-cancel-confirm.png"><img src="docs/shots/13-cancel-confirm.png" alt="Діалог скасування бронювання"></a>
-      <br><sub>Підтвердження скасування</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <a href="docs/shots/27-tz-my-bookings.png"><img src="docs/shots/27-tz-my-bookings.png" alt="Список моїх бронювань"></a>
-      <br><sub>Мої бронювання</sub>
-    </td>
-    <td width="50%" align="center">
-      <a href="docs/shots/33-notification-toast.png"><img src="docs/shots/33-notification-toast.png" alt="Сповіщення про кінець бронювання"></a>
-      <br><sub>Сповіщення, що бронь скоро закінчиться</sub>
-    </td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="docs/shots/19-mobile-grid.png"><img src="docs/shots/19-mobile-grid.png" alt="Сітка на телефоні" width="230"></a>
-      <br><sub>Сітка на телефоні</sub>
-    </td>
-    <td align="center">
-      <a href="docs/shots/20-mobile-form.png"><img src="docs/shots/20-mobile-form.png" alt="Форма на телефоні" width="230"></a>
-      <br><sub>Форма</sub>
-    </td>
-    <td align="center">
-      <a href="docs/shots/21-mobile-my.png"><img src="docs/shots/21-mobile-my.png" alt="Мої бронювання на телефоні" width="230"></a>
-      <br><sub>Мої бронювання</sub>
-    </td>
-  </tr>
-</table>
-
-Скриншоти зробило журі під час перевірки. Решта лежить у [`docs/shots`](docs/shots).
-
-## Результат конкурсу
+## Результат
 
 | Категорія ТЗ | Вага | Бал |
 | --- | :---: | :---: |
@@ -83,36 +30,42 @@
 | Сума за чек-листом | 100 | 88.34 |
 | Фінальний public-бал (з бонусами) | | **100 / 100** |
 
-<p align="center">
-  <a href="docs/uaskills-review.pdf">
-    <img src="docs/uaskills-review-cover.png" alt="Рев'ю журі UA-SKILLS, перша сторінка" width="640">
-  </a>
-  <br>
-  <sub>Повне рев'ю журі в PDF на 5 сторінок, відкривається по кліку на картинку</sub>
-</p>
-
 ### Що написало журі
 
 > Робота зроблена на впевненому рівні, особливо в частині захисту від гонки при бронюванні і роботи з часовими поясами - обидві теми зазвичай і підводять подібні проекти, а тут витримані до дрібних граничних випадків.
 
-#### Що сподобалось
-
+Що сподобалось:
 - 15 одночасних запитів на один слот дали рівно одну бронь у базі. Перевірка є і в сервісі, і в Postgres через `EXCLUDE USING gist`.
 - Правила часу рахуються в `Europe/Kyiv` через luxon, серії не з'їжджають після переходу на літній час, а в інтерфейсі час показується в поясі користувача.
 - Паролі в argon2, сесії лежать у базі з TTL, кука httpOnly і secure. Для неіснуючих email є фіктивний хеш, щоб за часом відповіді не можна було зрозуміти, чи зареєстрована адреса.
 - На кривих запитах до API журі жодного разу не отримало 500, формат помилок один на весь бекенд.
 - На телефоні (390px) сітка переходить у вигляд одного дня.
 
-#### Зауваження
-
+Зауваження:
 - `weekStart` перевіряється тільки регуляркою, тому неіснуюча дата може дати 500.
 - Блоки броней у сітці не працюють з клавіатури.
 - У сесійної куки немає `Max-Age`, а `WEB_ORIGIN` не передається в `docker-compose.yml`.
 - Логіка бронювань розкидана між `RoomsService` і `BookingService`.
 
+## Скриншоти
+
+Їх зробило журі під час перевірки.
+
+| Тижнева сітка | Сітка в поясі Берліна |
+| --- | --- |
+| [<img src="docs/shots/04-grid-busy-slot.png" alt="Тижнева сітка з бронюванням">](docs/shots/04-grid-busy-slot.png) | [<img src="docs/shots/17-tz-berlin-grid.png" alt="Сітка в поясі Берліна">](docs/shots/17-tz-berlin-grid.png) |
+| **Скасування** | **Сповіщення, що бронь скоро закінчиться** |
+| [<img src="docs/shots/13-cancel-confirm.png" alt="Діалог скасування">](docs/shots/13-cancel-confirm.png) | [<img src="docs/shots/33-notification-toast.png" alt="Тост-сповіщення">](docs/shots/33-notification-toast.png) |
+
+| Сітка на телефоні | Форма | Мої бронювання |
+| :---: | :---: | :---: |
+| [<img src="docs/shots/19-mobile-grid.png" alt="Сітка на телефоні" width="220">](docs/shots/19-mobile-grid.png) | [<img src="docs/shots/20-mobile-form.png" alt="Форма на телефоні" width="220">](docs/shots/20-mobile-form.png) | [<img src="docs/shots/21-mobile-my.png" alt="Мої бронювання на телефоні" width="220">](docs/shots/21-mobile-my.png) |
+
+Решта скриншотів у [`docs/shots`](docs/shots).
+
 ---
 
-### Запуск через docker
+### запуск через docker  
 docker compose up --build  
 фронт http://localhost:5173  
 API http://localhost:3000/api  
@@ -143,7 +96,7 @@ npm run dev
 8. Адаптивність під мобільні пристрої  
 
 
-### Як влаштована перевірка перетинів
+### Як влаштована перевірка перетинів 
 
 Одна бронь це по суті відрізок часу  
 Два відрізки часу перетинаються якщо кожен починається раніше ніж закінчується інший   
